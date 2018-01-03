@@ -20,8 +20,7 @@ elif pyversion == 3:
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
 
-LARGE_FONT= ('TkDefaultFont', 14)
-LABEL_FONT=('TkDefaultFont', 16)
+LARGE_FONT = ('TkDefaultFont', 16)
 
 import numpy as np
 import datetime
@@ -51,7 +50,7 @@ class Sun(Frame):
         self.controller = controller
         Frame.__init__(self, self.parent, *args, **kwargs)
         
-        self.button = Button(self, text="UPDATE SUN", font = LABEL_FONT, command = self.plot) # button to update sun
+        self.button = Button(self, text="UPDATE SUN", font = LARGE_FONT, command = self.plot) # button to update sun
         self.button.grid(row = 0, column = 0, sticky = "ew")
         self.fig = plt.figure(figsize=(6, 6), facecolor = "none")
         self.canvas = FigureCanvasTkAgg(self.fig, self)
