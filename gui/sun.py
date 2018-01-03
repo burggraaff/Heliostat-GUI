@@ -24,24 +24,14 @@ LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
-import ephem
 import datetime
 
-import matplotlib.image as mpimg
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
-from astropy import coordinates as coord, units as u
-from astropy.io import fits
-
-from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
-
-
-#import Fitting_script as fs
+from PIL import Image, ImageOps
 
 day_of_year = datetime.datetime.now().timetuple().tm_yday
 
