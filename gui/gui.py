@@ -27,7 +27,7 @@ elif pyversion == 3:
     
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
-	
+
 LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
 
