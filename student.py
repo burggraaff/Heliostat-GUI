@@ -14,11 +14,6 @@ class Page1(gui.Page):
         self.spectrum.grid(row = 1, column = 2, sticky = "n", padx = 25)
         
         self.translatables = [self.title, self.controls.sun.button, self.controls.align.button, self.spectrum.button, self.spectrum.label_integration]
-        
-    def take_spectrum(self):
-        filename = gui.expose(self.e_exposure.get()) # expose image; returns filename where spectrum was saved
-        data = gui.reduce_spectrum(filename) # remove dark
-        gui.plot_spectrum(data, self.f_spectrum, self.a_exp, self.a_spec) # display images
 
 pages = [Page1]
 
