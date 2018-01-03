@@ -8,28 +8,17 @@ import sys
 pyversion = sys.version_info[0]
 
 if pyversion == 2:
-    import Tkinter as tk
-    from Tkinter import *
-    from ttk import *
+    from Tkinter import Frame, Button, Label, Entry
     import tkFont as font
-    import tkMessageBox
+    import tkMessageBox as messagebox
     
-    from urllib import urlretrieve
-
 elif pyversion == 3:
-    import tkinter as tk
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font
-    from tkinter import messagebox as tkMessageBox
-    
-    from urllib.request import urlretrieve
-    
+    from tkinter import Frame, Button, Label, Entry, font, messagebox
+        
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
 
-LARGE_FONT= ('TkDefaultFont', 14)
-LABEL_FONT=('TkDefaultFont', 16)
+LARGE_FONT = ('TkDefaultFont', 16)
 
 import numpy as np
 import ephem
@@ -56,7 +45,7 @@ day_of_year = datetime.datetime.now().timetuple().tm_yday
 def timestamp():
     return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-class Spectrum(tk.Frame):
+class Spectrum(Frame):
     """
     Object that aids in displaying a spectrum
     """
@@ -66,15 +55,15 @@ class Spectrum(tk.Frame):
         """
         self.parent = parent
         self.controller = controller
-        tk.Frame.__init__(self, self.parent, *args, **kwargs)
+        Frame.__init__(self, self.parent, *args, **kwargs)
         
         self.filename = "N/A"
         
-        self.button = tk.Button(self, text = "TAKE SPECTRUM", font = LABEL_FONT, height = 2, width = 3, command = self.new_spectrum)
+        self.button = Button(self, text = "TAKE SPECTRUM", font = LARGE_FONT, height = 2, width = 3, command = self.new_spectrum)
         self.button.grid(row = 0, column = 0, columnspan = 2, padx = 5, pady = 10, sticky = "news")
-        self.label_integration = tk.Label(self, text = "INTEGRATION TIME", height = 2, width = 16, font = LABEL_FONT)
+        self.label_integration = Label(self, text = "INTEGRATION TIME", height = 2, width = 16, font = LARGE_FONT)
         self.label_integration.grid(row = 1, column = 0, sticky = "w")
-        self.time = tk.Entry(self, font = LABEL_FONT)
+        self.time = Entry(self, font = LARGE_FONT)
         self.time.insert(0, 10)
         self.time.grid(row = 1, column = 1, sticky = "w")
 
@@ -101,7 +90,7 @@ def expose(exposure_time):
     try:
         time = float(exposure_time)
     except:
-        tkMessageBox.showerror("Error", "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
+        messagebox.showerror("Error", "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
         raise ValueError("Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
     print("Exposing for {0} seconds".format(time))
     # ACTUAL EXPOSURE TO BE ADDED HERE
