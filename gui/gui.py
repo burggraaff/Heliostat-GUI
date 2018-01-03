@@ -32,7 +32,6 @@ LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
-import pyfits
 import ephem
 import datetime
 
@@ -45,6 +44,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from astropy import coordinates as coord, units as u
+from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
@@ -275,8 +275,8 @@ def expose(exposure_time):
     return "examples/Mooi"
 
 def reduce_spectrum(filename):
-    raw_data = pyfits.getdata(filename + ".fit").astype(np.int16)
-    dark_data = pyfits.getdata(filename + "_DarkCurrent.fit").astype(np.int16)
+    raw_data = fits.getdata(filename + ".fit").astype(np.int16)
+    dark_data = fits.getdata(filename + "_DarkCurrent.fit").astype(np.int16)
     data = raw_data - dark_data
     data = data.T
     return data
