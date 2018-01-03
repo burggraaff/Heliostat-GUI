@@ -4,8 +4,8 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
-import sys
-pyversion = sys.version_info[0]
+from sys import version_info
+pyversion = version_info[0]
 
 if pyversion == 2:
     from Tkinter import Frame, Button, Label, Entry
