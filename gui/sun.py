@@ -6,23 +6,15 @@ from __future__ import print_function, division
 
 from sys import version_info
 pyversion = version_info[0]
-
+    
 if pyversion == 2:
-    import Tkinter as tk
-    from Tkinter import *
-    from ttk import *
+    from Tkinter import Frame, Button
     import tkFont as font
-    import tkMessageBox
-    
+    import tkMessageBox as messagebox
     from urllib import urlretrieve
-
-elif pyversion == 3:
-    import tkinter as tk
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font
-    from tkinter import messagebox as tkMessageBox
     
+elif pyversion == 3:
+    from tkinter import Frame, Button, font, messagebox
     from urllib.request import urlretrieve
     
 else:
@@ -53,7 +45,7 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
 day_of_year = datetime.datetime.now().timetuple().tm_yday
 
-class Sun(tk.Frame):
+class Sun(Frame):
     """
     Object that aids in displaying the orientation of the Sun
     """
@@ -67,9 +59,9 @@ class Sun(tk.Frame):
         """
         self.parent = parent
         self.controller = controller
-        tk.Frame.__init__(self, self.parent, *args, **kwargs)
+        Frame.__init__(self, self.parent, *args, **kwargs)
         
-        self.button = tk.Button(self, text="UPDATE SUN", font = LABEL_FONT, command = self.plot) # button to update sun
+        self.button = Button(self, text="UPDATE SUN", font = LABEL_FONT, command = self.plot) # button to update sun
         self.button.grid(row = 0, column = 0, sticky = "ew")
         self.fig = plt.figure(figsize=(6, 6), facecolor = "none")
         self.canvas = FigureCanvasTkAgg(self.fig, self)
@@ -91,7 +83,7 @@ def load_sun(dynamic = "sun.jpg", static = "static_images/sun_static.jpg"):
         print("Loaded live image of Sun from {0}".format(dynamic))
     except:
         img = Image.open(static)
-        tkMessageBox.showwarning("Warning", "Unable to download live image of the Sun; using static one instead.")
+        messagebox.showwarning("Warning", "Unable to download live image of the Sun; using static one instead.")
         print("Loaded static image of Sun from {0}".format(static))
     
     return img
