@@ -48,6 +48,8 @@ from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
+from PyAPT import APTMotor
+
 
 #import Fitting_script as fs
 
