@@ -17,7 +17,7 @@ if pyversion == 2:
     from ttk import *
     import tkFont as font
     import tkMessageBox
-    
+
     from urllib import urlretrieve
 
 elif pyversion == 3:
@@ -26,9 +26,9 @@ elif pyversion == 3:
     from tkinter.ttk import *
     from tkinter import font
     from tkinter import messagebox as tkMessageBox
-    
+
     from urllib.request import urlretrieve
-    
+
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
 
@@ -68,7 +68,7 @@ class Controls(tk.Frame):
         self.sun.grid(row = 1, column = 0, sticky = "news", pady = 10)
 
 def img(lang):
-    return PhotoImage(Image.open("static_images/{0}.png".format(lang))).zoom(5).subsample(60)
+    return Image.open("localisation/flags/{0}.png".format(lang)).resize((80, 55))
 
 class Page(tk.Frame): # individual page within interface
     def __init__(self, parent, controller, langfile, previous = None, nextpage = None, *args, **kwargs):
@@ -77,10 +77,10 @@ class Page(tk.Frame): # individual page within interface
         self.controller = controller
         self.langfile = langfile
         self.translatables = []
-        
+
         self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = lambda: quit(self.controller))
         self.quit_button.grid(row = 0, column = 5000, padx = 2.5, pady = 2.5, sticky = tk.NE) # column = 5000 ensures it is always on the far right
-        
+
         if previous is not None:
             self.previous_button = tk.Button(self, text = "PREV", font = LARGE_FONT, height = 2, width = 5, command = lambda: self.controller.show_frame(previous))
             self.previous_button.grid(row = 1000, column = 0, padx = 2.5, pady = 2.5, sticky = "news")
@@ -88,20 +88,20 @@ class Page(tk.Frame): # individual page within interface
             self.next_button = tk.Button(self, text = "NEXT", font = LARGE_FONT, height = 2, width = 5, command = lambda: self.controller.show_frame(nextpage))
             self.next_button.grid(row = 1000, column = 5000, padx = 2.5, pady = 2.5, sticky = "news")
 
-        
+
     def translate(self, lang):
-        with open("{0}/{1}".format(self.langfile, lang)) as f:
+        with open("localisation/{0}/{1}".format(self.langfile, lang)) as f:
             lines = f.readlines()
         for t, l in zip(self.translatables, lines):
             t["text"] = l
-        self.flag_img_image = Image.open("static_images//{0}.png".format(lang)).resize((80, 55))
+        self.flag_img_image = Image.open("localisation/flags/{0}.png".format(lang)).resize((80, 55))
         self.flag_img = ImageTk.PhotoImage(self.flag_img_image)
         try:
             self.flag_button.destroy()
         except AttributeError:
             pass
         self.flag_button = tk.Button(self, image = self.flag_img, height = 55, width = 80, command = self.controller.translate_all)
-        self.flag_button.grid(row = 0, column = 0, padx=2.5, pady=2.5)        
+        self.flag_button.grid(row = 0, column = 0, padx=2.5, pady=2.5)
 
     def show(self):
         self.lift()
@@ -113,29 +113,29 @@ class Root(Tk): # main object, controls the programme
         self.toggle_fullscreen()
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
-        
+
         self.language = "en"
-        
+
         container = tk.Frame(self)
         container.grid(row=0, column=0, sticky=tk.NSEW)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-        
+
         self.geom = "1600x900+0+0"
-        
+
         self.frames = {}
-        
+
         print("Loading pages...")
         for p in pages:
             frame = p(container, self)
             self.frames[p] = frame
             frame.grid(row=0, column=0, sticky="nsew")
         print("...Finished loading pages")
-        
+
         self.translate_all()
-        
+
         self.show_frame(pages[0])
-        
+
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
@@ -145,14 +145,14 @@ class Root(Tk): # main object, controls the programme
         for frame in self.frames.values():
             frame.translate(self.language)
         print("Translated all pages to {0}".format(self.language))
-    
+
     def toggle_fullscreen(self, event = None):
         self.is_fullscreen = not self.is_fullscreen
         print("Toggled fullscreen {0}".format("on" if self.is_fullscreen else "off"))
         self.attributes("-fullscreen", self.is_fullscreen)
         if not self.is_fullscreen:
             self.wm_geometry(self.geom)
-    
+
     def end_fullscreen(self, event = None):
         self.is_fullscreen = False
         print("Ended fullscreen")
