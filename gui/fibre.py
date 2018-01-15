@@ -28,12 +28,9 @@ elif pyversion == 3:
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
 
-LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
-import ephem
-import datetime
 
 import matplotlib.image as mpimg
 import matplotlib
@@ -48,7 +45,7 @@ from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
-from PyAPT import APTMotor
+from .PyAPT import APTMotor
 
 import PyCapture2 as pc2
 
