@@ -50,10 +50,7 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
 from PyAPT import APTMotor
 
-
-#import Fitting_script as fs
-
-day_of_year = datetime.datetime.now().timetuple().tm_yday
+import PyCapture2 as pc2
 
 def align_fibre():
     print("Align fibre")
