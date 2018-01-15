@@ -13,7 +13,7 @@ if pyversion == 2:
     from ttk import *
     import tkFont as font
     import tkMessageBox
-    
+
     from urllib import urlretrieve
 
 elif pyversion == 3:
@@ -22,9 +22,9 @@ elif pyversion == 3:
     from tkinter.ttk import *
     from tkinter import font
     from tkinter import messagebox as tkMessageBox
-    
+
     from urllib.request import urlretrieve
-    
+
 else:
     print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
 
@@ -49,9 +49,71 @@ from .PyAPT import APTMotor
 
 import PyCapture2 as pc2
 
+
 def align_fibre():
     print("Align fibre")
-    
+
+def printCameraInfo(cam):
+    camInfo = cam.getCameraInfo()
+    print("CAMERA INFORMATION")
+    print("Serial number - ", camInfo.serialNumber)
+    print("Camera model - ", camInfo.modelName)
+    print("Camera vendor - ", camInfo.vendorName)
+    print("Sensor - ", camInfo.sensorInfo)
+    print("Resolution - ", camInfo.sensorResolution)
+    print("Firmware version - ", camInfo.firmwareVersion)
+    print("Firmware build time - ", camInfo.firmwareBuildTime)
+    print("")
+
+
+def enableEmbeddedTimeStamp(cam, enableTimeStamp):
+    embeddedInfo = cam.getEmbeddedImageInfo()
+    if embeddedInfo.available.timestamp:
+        cam.setEmbeddedImageInfo(timestamp = enableTimeStamp)
+        if(enableTimeStamp):
+            print("\nTimeStamp is enabled.\n")
+        else:
+            print("\nTimeStamp is disabled.\n")
+
+
+def grabImages(cam, numImagesToGrab):
+    prevts = None
+    for i in range(numImagesToGrab):
+        try:
+            image = cam.retrieveBuffer()
+        except pc2.Fc2error as fc2Err:
+            print("Error retrieving buffer : ", fc2Err)
+            continue
+
+        ts = image.getTimeStamp()
+        if(prevts):
+            diff = (ts.cycleSeconds - prevts.cycleSeconds) * 8000 + (ts.cycleCount - prevts.cycleCount)
+            print("Timestamp [", ts.cycleSeconds, ts.cycleCount, "] -", diff)
+        prevts = ts
+
+    print("Saving the last image to LED_photo.png")
+    image.save("LED_photo.png", pc2.IMAGE_FILE_FORMAT.PNG)
+    return image
+
+
+def connect_camera():
+    print("\n***** CONNECTING TO FIBREHEAD LED CAMERA*****")
+    bus = pc2.BusManager()
+    numCams = bus.getNumOfCameras()
+    assert numCams >= 1, "Could not find a camera"
+
+    cam = pc2.Camera()
+    cam.connect(bus.getCameraFromIndex(0))
+    printCameraInfo(cam)
+    enableEmbeddedTimeStamp(cam, True)
+    print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
+    return cam
+
+
+def disconnect_camera(cam):
+    cam.disconnect()
+
+
 class Align(tk.Frame):
     """
     Object that aids in aligning the fibre
@@ -59,11 +121,11 @@ class Align(tk.Frame):
     def __init__(self, parent, controller, *args, **kwargs):
         """
         Initialises Align object
-        
+
         Parameters
         ----------
         self: self
-        
+
         parent: parent frame, to draw this one in
         """
         self.parent = parent
@@ -71,22 +133,24 @@ class Align(tk.Frame):
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
         self.x = 0.
         self.y = 0.
-        
+
+        self.cam = connect_camera()
+
         self.button = tk.Button(self, text = "ALIGN FIBRE", font = LABEL_FONT, height = 2, width = 10, command = self.align)
         self.button.grid(row = 0, column = 0, rowspan = 2, sticky = "news")
         self.labelx = tk.Label(self, text = "X:", font = LABEL_FONT)
         self.labelx.grid(row = 0, column = 1, sticky = "news", padx=5)
         self.labely = tk.Label(self, text = "Y:", font = LABEL_FONT)
         self.labely.grid(row = 1, column = 1, sticky = "news", padx=5)
-        
+
         self.f = "{0:+.4f}" # format to print values in
         self.indicator_x = tk.Label(self, text = self.f.format(self.x), font = LABEL_FONT)
         self.indicator_x.grid(row = 0, column = 2, sticky = "e")
         self.indicator_y = tk.Label(self, text = self.f.format(self.y), font = LABEL_FONT)
         self.indicator_y.grid(row = 1, column = 2, sticky = "e")
-        
+
         self.update(periodic = True)
-        
+
     def update(self, periodic = False):
         self.x += 0.0098 # replace this with fetching the actual values
         self.y -= 0.9846 # replace this with fetching the actual values
@@ -94,9 +158,14 @@ class Align(tk.Frame):
         self.indicator_y["text"] = self.f.format(self.y)
         if periodic:
             self.controller.after(3*1000, lambda: self.update(periodic = True))
-        
+
     def align(self):
         align_fibre()
         self.x = 0.
         self.y = 0.
         self.update()
+
+    def led_image(self):
+        self.img = grabImages(self.cam, 1)
+        shape = (self.img.getRows(), self.img.getCols())
+        self.imgdata = self.img.getData().reshape(shape)
