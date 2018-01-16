@@ -4,33 +4,21 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
+from sys import version_info
+assert version_info[0] == 2 and version_info[1] == 7,\
+     "This GUI is only compatible with Python 2.7.x"
+
 from .fibre import Align
 from .sun import Sun
 from .spectrum import Spectrum
 
-import sys
-pyversion = sys.version_info[0]
+import Tkinter as tk
+from Tkinter import *
+from ttk import *
+import tkFont as font
+import tkMessageBox
 
-if pyversion == 2:
-    import Tkinter as tk
-    from Tkinter import *
-    from ttk import *
-    import tkFont as font
-    import tkMessageBox
-
-    from urllib import urlretrieve
-
-elif pyversion == 3:
-    import tkinter as tk
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font
-    from tkinter import messagebox as tkMessageBox
-
-    from urllib.request import urlretrieve
-
-else:
-    print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
+from urllib import urlretrieve
 
 LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
@@ -51,9 +39,6 @@ from astropy import coordinates as coord, units as u
 from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
-
-
-#import Fitting_script as fs
 
 day_of_year = datetime.datetime.now().timetuple().tm_yday
 
@@ -105,6 +90,7 @@ class Page(tk.Frame): # individual page within interface
 
     def show(self):
         self.lift()
+
 
 class Root(Tk): # main object, controls the programme
     def __init__(self, pages, *args, **kwargs):

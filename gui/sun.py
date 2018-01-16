@@ -4,21 +4,10 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
-from sys import version_info
-pyversion = version_info[0]
-
-if pyversion == 2:
-    from Tkinter import Frame, Button
-    import tkFont as font
-    import tkMessageBox as messagebox
-    from urllib import urlretrieve
-
-elif pyversion == 3:
-    from tkinter import Frame, Button, font, messagebox
-    from urllib.request import urlretrieve
-
-else:
-    print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
+from Tkinter import Frame, Button
+import tkFont as font
+import tkMessageBox as messagebox
+from urllib import urlretrieve
 
 LARGE_FONT = ('TkDefaultFont', 16)
 
