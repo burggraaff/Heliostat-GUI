@@ -143,6 +143,10 @@ class Align(tk.Frame):
         self.labely = tk.Label(self, text = "Y:", font = LABEL_FONT)
         self.labely.grid(row = 1, column = 1, sticky = "news", padx=5)
 
+        self.fig = plt.figure(figsize=(4, 4), facecolor = "none")
+        self.canvas = FigureCanvasTkAgg(self.fig, self)
+        self.canvas.get_tk_widget().grid(row=100, column=0)
+
         self.f = "{0:+.4f}" # format to print values in
         self.indicator_x = tk.Label(self, text = self.f.format(self.x), font = LABEL_FONT)
         self.indicator_x.grid(row = 0, column = 2, sticky = "e")
@@ -160,6 +164,7 @@ class Align(tk.Frame):
             self.controller.after(3*1000, lambda: self.update(periodic = True))
 
     def align(self):
+        self.led_image()
         align_fibre()
         self.x = 0.
         self.y = 0.
@@ -169,3 +174,4 @@ class Align(tk.Frame):
         self.img = grabImages(self.cam, 1)
         shape = (self.img.getRows(), self.img.getCols())
         self.imgdata = self.img.getData().reshape(shape)
+        self.fig.imshow(self.imgdata)
