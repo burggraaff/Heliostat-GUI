@@ -63,7 +63,7 @@ class Page(tk.Frame): # individual page within interface
         self.langfile = langfile
         self.translatables = []
 
-        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = lambda: quit(self.controller))
+        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = self.end)
         self.quit_button.grid(row = 0, column = 5000, padx = 2.5, pady = 2.5, sticky = tk.NE) # column = 5000 ensures it is always on the far right
 
         if previous is not None:
@@ -72,7 +72,6 @@ class Page(tk.Frame): # individual page within interface
         if nextpage is not None:
             self.next_button = tk.Button(self, text = "NEXT", font = LARGE_FONT, height = 2, width = 5, command = lambda: self.controller.show_frame(nextpage))
             self.next_button.grid(row = 1000, column = 5000, padx = 2.5, pady = 2.5, sticky = "news")
-
 
     def translate(self, lang):
         with open("localisation/{0}/{1}".format(self.langfile, lang)) as f:
@@ -90,6 +89,9 @@ class Page(tk.Frame): # individual page within interface
 
     def show(self):
         self.lift()
+
+    def end(self):
+        end(self.controller)
 
 
 class Root(Tk): # main object, controls the programme
@@ -145,7 +147,7 @@ class Root(Tk): # main object, controls the programme
         self.attributes("-fullscreen", False)
         self.wm_geometry(self.geom)
 
-def quit(root):
-    root.quit()
-    root.destroy()
+def end(GUI):
+    GUI.quit()
+    GUI.destroy()
     print("Quit GUI")

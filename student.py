@@ -15,6 +15,10 @@ class Page1(gui.Page):
 
         self.translatables = [self.title, self.controls.sun.button, self.controls.align.button, self.spectrum.button, self.spectrum.label_integration]
 
+    def end(self):
+        self.controls.align.end()
+        gui.Page.end(self)
+
 pages = [Page1]
 
 GUI = gui.Root(pages)

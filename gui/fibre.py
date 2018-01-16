@@ -8,7 +8,7 @@ import Tkinter as tk
 from Tkinter import *
 from ttk import *
 import tkFont as font
-import tkMessageBox
+import tkMessageBox as messagebox
 
 from urllib import urlretrieve
 
@@ -30,6 +30,8 @@ from astropy.io import fits
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
 from .PyAPT import APTMotor
+serial_no_1 = 26000369
+serial_no_2 = 26000370
 
 import PyCapture2 as pc2
 
@@ -80,24 +82,6 @@ def grabImages(cam, numImagesToGrab):
     return image
 
 
-def connect_camera():
-    print("\n***** CONNECTING TO FIBREHEAD LED CAMERA*****")
-    bus = pc2.BusManager()
-    numCams = bus.getNumOfCameras()
-    assert numCams >= 1, "Could not find a camera"
-
-    cam = pc2.Camera()
-    cam.connect(bus.getCameraFromIndex(0))
-    printCameraInfo(cam)
-    enableEmbeddedTimeStamp(cam, True)
-    print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
-    return cam
-
-
-def disconnect_camera(cam):
-    cam.disconnect()
-
-
 class Align(tk.Frame):
     """
     Object that aids in aligning the fibre
@@ -115,10 +99,11 @@ class Align(tk.Frame):
         self.parent = parent
         self.controller = controller
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
-        self.x = 0.
-        self.y = 0.
+        self.x = self.y = -1000
 
-        self.cam = connect_camera()
+        self.cam = self.connect_camera()
+        self.motor1 = self.connect_motor(serial_no_1)
+        self.motor2 = self.connect_motor(serial_no_2)
 
         self.button = tk.Button(self, text = "ALIGN FIBRE", font = LABEL_FONT, height = 2, width = 10, command = self.align)
         self.button.grid(row = 0, column = 0, rowspan = 2, sticky = "news")
@@ -140,19 +125,65 @@ class Align(tk.Frame):
         self.update(periodic = True)
 
     def update(self, periodic = False):
-        self.x += 0.0098 # replace this with fetching the actual values
-        self.y -= 0.9846 # replace this with fetching the actual values
+        if self.motor1 is not None:
+            self.x = self.motor1.getPos()
+        if self.motor2 is not None:
+            self.y = self.motor2.getPos()
         self.indicator_x["text"] = self.f.format(self.x)
         self.indicator_y["text"] = self.f.format(self.y)
         if periodic:
             self.controller.after(3*1000, lambda: self.update(periodic = True))
 
+    def end(self):
+        if self.cam is not None:
+            self.cam.disconnect()
+        if self.motor1 is not None:
+            self.motor1.cleanUpAPT()
+        if self.motor2 is not None:
+            self.motor2.cleanUpAPT()
+
+    @staticmethod
+    def connect_motor(serial_no):
+        try:
+            motor = APTMotor(SerialNum = serial_no)
+        except:
+            print("Could not connect to motor with Serial number {0}".format(serial_no))
+            return None
+        try:
+            motor.go_home()
+        except ValueError:
+            pass  # always gives a ValueError for some reason
+        motor.identify()
+        return motor
+
     def align(self):
+        if self.cam is None:
+            messagebox.showwarning("Warning", "No fibrehead LED camera found")
+            raise ValueError("No fibrehead LED camera found")
+        if self.motor1 is None or self.motor2 is None:
+            messagebox.showwarning("Warning", "(one of) the motor controllers not found")
+            raise ValueError("One of the motor controllers not found")
         self.led_image()
         align_fibre()
-        self.x = 0.
-        self.y = 0.
+        self.motor1.go_home()
+        self.motor2.go_home()
         self.update()
+
+    @staticmethod
+    def connect_camera():
+        print("\n***** CONNECTING TO FIBREHEAD LED CAMERA*****")
+        bus = pc2.BusManager()
+        numCams = bus.getNumOfCameras()
+        if numCams == 0:
+            print("\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n")
+            return None
+        else:
+            cam = pc2.Camera()
+            cam.connect(bus.getCameraFromIndex(0))
+            printCameraInfo(cam)
+            enableEmbeddedTimeStamp(cam, True)
+            print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
+            return cam
 
     def led_image(self):
         self.img = grabImages(self.cam, 1)
