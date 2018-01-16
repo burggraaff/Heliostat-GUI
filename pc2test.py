@@ -4,6 +4,8 @@ Testing PyCapture2
 from __future__ import print_function
 import PyCapture2 as pc2
 print("Imported pc2")
+from matplotlib import pyplot as plt
+import cv2
 
 def printCameraInfo(cam):
     camInfo = cam.getCameraInfo()
@@ -61,3 +63,6 @@ data = image.getData()
 shape = (image.getRows(), image.getCols())
 print(shape)
 data = data.reshape(shape)
+
+plt.imshow(data)
+plt.show()
