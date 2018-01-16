@@ -153,7 +153,7 @@ class Align(tk.Frame):
             motor.go_home()
         except ValueError:
             pass  # always gives a ValueError for some reason
-        motor.identify()
+        motor.identify()  # blink to show connection clearly
         return motor
 
     def align(self):
@@ -171,7 +171,7 @@ class Align(tk.Frame):
 
     @staticmethod
     def connect_camera():
-        print("\n***** CONNECTING TO FIBREHEAD LED CAMERA*****")
+        print("\n***** CONNECTING TO FIBREHEAD LED CAMERA *****")
         bus = pc2.BusManager()
         numCams = bus.getNumOfCameras()
         if numCams == 0:
