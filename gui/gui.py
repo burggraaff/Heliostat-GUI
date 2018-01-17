@@ -49,8 +49,8 @@ class Controls(tk.Frame):
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
         self.align = Align(parent = self, controller = self.controller)
         self.sun = Sun(parent = self, controller = self.controller)
-        self.align.grid(row = 0, column = 0, sticky = "news", pady = 10)
-        self.sun.grid(row = 1, column = 0, sticky = "news", pady = 10)
+        self.align.grid(row = 0, column = 0, sticky = "news", pady = 5)
+        self.sun.grid(row = 1, column = 0, sticky = "news", pady = 5)
 
 def img(lang):
     return Image.open("localisation/flags/{0}.png".format(lang)).resize((80, 55))

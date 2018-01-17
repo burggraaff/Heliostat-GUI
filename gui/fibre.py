@@ -121,22 +121,17 @@ class Align(tk.Frame):
         self.motor_warning_given = False
 
         self.button = tk.Button(self, text = "ALIGN FIBRE", font = LABEL_FONT, height = 2, width = 10, command = self.align)
-        self.button.grid(row = 0, column = 0, rowspan = 2, sticky = "news")
-        self.labelx = tk.Label(self, text = "X:", font = LABEL_FONT)
-        self.labelx.grid(row = 0, column = 1, sticky = "news", padx=5)
-        self.labely = tk.Label(self, text = "Y:", font = LABEL_FONT)
-        self.labely.grid(row = 1, column = 1, sticky = "news", padx=5)
+        self.button.grid(row = 0, column = 0, columnspan=2, sticky = "news")
 
         self.fig = plt.figure(figsize=(4, 4), facecolor = "none")
-        #self.ax = self.fig.gca() #  easier than using subplots
         self.canvas = FigureCanvasTkAgg(self.fig, self)
-        self.canvas.get_tk_widget().grid(row=100, column=0)
+        self.canvas.get_tk_widget().grid(row=3, column=0, columnspan=2)
 
-        self.f = "{0:+.4f}" # format to print values in
-        self.indicator_x = tk.Label(self, text = self.f.format(self.x), font = LABEL_FONT)
-        self.indicator_x.grid(row = 0, column = 2, sticky = "e")
-        self.indicator_y = tk.Label(self, text = self.f.format(self.y), font = LABEL_FONT)
-        self.indicator_y.grid(row = 1, column = 2, sticky = "e")
+        self.f = "{0}: {1:+.4f}" # format to print values in
+        self.indicator_x = tk.Label(self, text = self.f.format("X", self.x), font = LABEL_FONT)
+        self.indicator_x.grid(row = 1, column = 1, sticky = "w")
+        self.indicator_y = tk.Label(self, text = self.f.format("Y", self.y), font = LABEL_FONT)
+        self.indicator_y.grid(row = 2, column = 1, sticky = "w")
 
         self.update(periodic = True)
 
@@ -145,8 +140,8 @@ class Align(tk.Frame):
             self.x = self.motor1.getPos()
         if self.motor2 is not None:
             self.y = self.motor2.getPos()
-        self.indicator_x["text"] = self.f.format(self.x)
-        self.indicator_y["text"] = self.f.format(self.y)
+        self.indicator_x["text"] = self.f.format("X", self.x)
+        self.indicator_y["text"] = self.f.format("Y", self.y)
         if periodic:
             self.controller.after(3*1000, lambda: self.update(periodic = True))
 
