@@ -182,8 +182,8 @@ class Align(tk.Frame):
         self.plot_led_image(self.led_image(self.cam))
         align_fibre()
         # TEMPORARY:
-        self.motor1.go_home()
-        self.motor2.go_home()
+        self.motor1.identify()
+        self.motor2.identify()
 
         self.update()
 
