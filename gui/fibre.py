@@ -29,15 +29,27 @@ from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
-from .PyAPT import APTMotor
+try:
+    from .PyAPT import APTMotor
+except ImportError:
+    use_motors = False
+else:
+    use_motors = True
+
 serial_no_1 = 26000369
 serial_no_2 = 26000370
 
-import PyCapture2 as pc2
+try:
+    import PyCapture2 as pc2
+except ImportError:
+    use_camera = False
+else:
+    use_camera = True
 
 
 def align_fibre():
     print("Align fibre")
+
 
 def printCameraInfo(cam):
     camInfo = cam.getCameraInfo()
@@ -99,11 +111,14 @@ class Align(tk.Frame):
         self.parent = parent
         self.controller = controller
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
-        self.x = self.y = -1000
+        self.x = self.y = -9999.9999
 
-        self.cam = self.connect_camera()
-        self.motor1 = self.connect_motor(serial_no_1)
-        self.motor2 = self.connect_motor(serial_no_2)
+        global use_camera ; global use_motors
+        self.cam = self.connect_camera(use_camera)
+        self.camera_warning_given = False
+        self.motor1 = self.connect_motor(serial_no_1, use_motors)
+        self.motor2 = self.connect_motor(serial_no_2, use_motors)
+        self.motor_warning_given = False
 
         self.button = tk.Button(self, text = "ALIGN FIBRE", font = LABEL_FONT, height = 2, width = 10, command = self.align)
         self.button.grid(row = 0, column = 0, rowspan = 2, sticky = "news")
@@ -113,6 +128,7 @@ class Align(tk.Frame):
         self.labely.grid(row = 1, column = 1, sticky = "news", padx=5)
 
         self.fig = plt.figure(figsize=(4, 4), facecolor = "none")
+        #self.ax = self.fig.gca() #  easier than using subplots
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.get_tk_widget().grid(row=100, column=0)
 
@@ -143,39 +159,49 @@ class Align(tk.Frame):
             self.motor2.cleanUpAPT()
 
     @staticmethod
-    def connect_motor(serial_no):
-        try:
-            motor = APTMotor(SerialNum = serial_no)
-        except:
-            print("Could not connect to motor with Serial number {0}".format(serial_no))
+    def connect_motor(serial_no, use_motors = True):
+        if not use_motors:
             return None
-        try:
-            motor.go_home()
-        except ValueError:
-            pass  # always gives a ValueError for some reason
-        motor.identify()  # blink to show connection clearly
-        return motor
+        else:
+            try:
+                motor = APTMotor(SerialNum = serial_no)
+            except:
+                print("Could not connect to motor with Serial number {0}".format(serial_no))
+                return None
+            try:
+                motor.go_home()
+            except ValueError:
+                pass  # always gives a ValueError for some reason
+            motor.identify()  # blink to show connection clearly
+            return motor
 
     def align(self):
-        if self.cam is None:
+        if self.cam is None and not self.camera_warning_given:
             messagebox.showwarning("Warning", "No fibrehead LED camera found")
+            self.camera_warning_given = True
             raise ValueError("No fibrehead LED camera found")
-        if self.motor1 is None or self.motor2 is None:
-            messagebox.showwarning("Warning", "(one of) the motor controllers not found")
+        if (self.motor1 is None or self.motor2 is None) and not self.motor_warning_given:
+            messagebox.showwarning("Warning", "(one of the) Motor controllers not found")
+            self.motor_warning_given = True
             raise ValueError("One of the motor controllers not found")
-        self.led_image()
+        self.plot_led_image(self.led_image(self.cam))
         align_fibre()
+        # TEMPORARY:
         self.motor1.go_home()
         self.motor2.go_home()
+
         self.update()
 
     @staticmethod
-    def connect_camera():
+    def connect_camera(use_camera):
+        if not use_camera:
+            return None
         print("\n***** CONNECTING TO FIBREHEAD LED CAMERA *****")
         bus = pc2.BusManager()
         numCams = bus.getNumOfCameras()
         if numCams == 0:
             print("\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n")
+            use_camera = False
             return None
         else:
             cam = pc2.Camera()
@@ -185,8 +211,18 @@ class Align(tk.Frame):
             print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
             return cam
 
-    def led_image(self):
-        self.img = grabImages(self.cam, 1)
-        shape = (self.img.getRows(), self.img.getCols())
-        self.imgdata = self.img.getData().reshape(shape)
-        self.fig.imshow(self.imgdata)
+    @staticmethod
+    def led_image(camera):
+        if camera is None:
+            imgdata = np.kron([[1, 0] * 4, [0, 1] * 4] * 4, np.ones((10,10)))
+        else:
+            img = grabImages(camera, 1)
+            shape = (img.getRows(), img.getCols())
+            imgdata = img.getData().reshape(shape)
+        return imgdata
+
+    def plot_led_image(self, data):
+        ax = self.fig.gca()
+        ax.imshow(data)
+        ax.axis("off")
+        self.fig.canvas.draw()
