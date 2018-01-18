@@ -54,9 +54,14 @@ cam = pc2.Camera()
 cam.connect(bus.getCameraFromIndex(0))
 printCameraInfo(cam)
 
+fmt7info, supported = cam.getFormat7Info(0)
+fmt7imgSet = pc2.Format7ImageSettings(0, 0, 0, fmt7info.maxWidth, fmt7info.maxHeight, pc2.PIXEL_FORMAT.MONO8)
+fmt7pktInf, isValid = cam.validateFormat7Settings(fmt7imgSet)
+cam.setFormat7ConfigurationPacket(fmt7pktInf.recommendedBytesPerPacket, fmt7imgSet)
+
 enableEmbeddedTimeStamp(cam, True)
 cam.startCapture()
-image = grabImages(cam, 1)
+image = grabImages(cam, 10)
 cam.stopCapture()
 
 data = image.getData()
