@@ -59,15 +59,21 @@ fmt7imgSet = pc2.Format7ImageSettings(0, 0, 0, fmt7info.maxWidth, fmt7info.maxHe
 fmt7pktInf, isValid = cam.validateFormat7Settings(fmt7imgSet)
 cam.setFormat7ConfigurationPacket(fmt7pktInf.recommendedBytesPerPacket, fmt7imgSet)
 
+d = pc2.PROPERTY_TYPE.__dict__
+props = [key for key in d.keys() if isinstance(d[key], int)]
+
 enableEmbeddedTimeStamp(cam, True)
+cam.setProperty(type = pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue = 0.5)
+cam.setProperty(type = pc2.PROPERTY_TYPE.GAIN, absControl=True, autoManualMode=False, absValue = 12.0)
 cam.startCapture()
-image = grabImages(cam, 10)
+image = grabImages(cam, 1)
 cam.stopCapture()
 
 data = image.getData()
 shape = (image.getRows(), image.getCols())
-print(shape)
 data = data.reshape(shape)
+
+print(data.min(), data.max())
 
 plt.imshow(data)
 plt.show()
