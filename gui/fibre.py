@@ -16,7 +16,6 @@ LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
 
-import matplotlib.image as mpimg
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
