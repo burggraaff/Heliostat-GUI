@@ -68,13 +68,14 @@ def enableEmbeddedTimeStamp(cam, enableTimeStamp):
     if embeddedInfo.available.timestamp:
         cam.setEmbeddedImageInfo(timestamp = enableTimeStamp)
         if(enableTimeStamp):
-            print("\nTimeStamp is enabled.\n")
+            print("TimeStamp is enabled.")
         else:
-            print("\nTimeStamp is disabled.\n")
+            print("TimeStamp is disabled.")
 
 
 def grabImages(cam, numImagesToGrab):
     prevts = None
+    cam.startCapture()
     for i in range(numImagesToGrab):
         try:
             image = cam.retrieveBuffer()
@@ -88,6 +89,7 @@ def grabImages(cam, numImagesToGrab):
             print("Timestamp [", ts.cycleSeconds, ts.cycleCount, "] -", diff)
         prevts = ts
 
+    cam.stopCapture()
     print("Saving the last image to LED_photo.png")
     image.save("LED_photo.png", pc2.IMAGE_FILE_FORMAT.PNG)
     return image
@@ -141,8 +143,9 @@ class Align(tk.Frame):
             self.y = self.motor2.getPos()
         self.indicator_x["text"] = self.f.format("X", self.x)
         self.indicator_y["text"] = self.f.format("Y", self.y)
+        self.plot_led_image(self.led_image(self.cam))
         if periodic:
-            self.controller.after(3*1000, lambda: self.update(periodic = True))
+            self.controller.after(1250, lambda: self.update(periodic = True))
 
     def end(self):
         if self.cam is not None:
@@ -206,17 +209,24 @@ class Align(tk.Frame):
             return cam
 
     @staticmethod
-    def led_image(camera):
+    def led_image(camera, shutter=0.5, gain=12.0):
         if camera is None:
             imgdata = np.kron([[1, 0] * 4, [0, 1] * 4] * 4, np.ones((10,10)))
         else:
-            img = grabImages(camera, 1)
-            shape = (img.getRows(), img.getCols())
-            imgdata = img.getData().reshape(shape)
+            camera.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
+            camera.setProperty(type=pc2.PROPERTY_TYPE.GAIN, absControl=True, autoManualMode=False, absValue=gain)
+            camera.startCapture()
+            image = camera.retrieveBuffer()
+            camera.stopCapture()
+
+            imgdata = np.array(image.getData())  # np.array() call prevents crash
+            shape = (image.getRows(), image.getCols())
+            imgdata = imgdata.reshape(shape)
+
         return imgdata
 
     def plot_led_image(self, data):
         ax = self.fig.gca()
-        ax.imshow(data)
+        ax.imshow(data, cmap=plt.cm.Greys)
         ax.axis("off")
         self.fig.canvas.draw()

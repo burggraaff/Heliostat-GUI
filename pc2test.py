@@ -6,6 +6,7 @@ import PyCapture2 as pc2
 print("Imported pc2")
 from matplotlib import pyplot as plt
 import cv2
+import numpy as np
 
 def printCameraInfo(cam):
     camInfo = cam.getCameraInfo()
@@ -45,6 +46,20 @@ def grabImages(cam, numImagesToGrab):
     print("Saving the last image to LED_photo.png")
     image.save("LED_photo.png", pc2.IMAGE_FILE_FORMAT.PNG)
     return image
+
+
+def ledimage(cam, shutter = 0.5, gain = 12.0):
+    cam.setProperty(type = pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue = 0.5)
+    cam.setProperty(type = pc2.PROPERTY_TYPE.GAIN, absControl=True, autoManualMode=False, absValue = 12.0)
+    cam.startCapture()
+    image = cam.retrieveBuffer()
+    cam.stopCapture()
+
+    data = np.array(image.getData())  # np.array() call prevents crash
+    shape = (image.getRows(), image.getCols())
+    data = data.reshape(shape)
+
+    return data
 
 bus = pc2.BusManager()
 numCams = bus.getNumOfCameras()
