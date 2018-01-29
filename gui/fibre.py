@@ -7,10 +7,7 @@ from __future__ import print_function, division
 import Tkinter as tk
 from Tkinter import *
 from ttk import *
-import tkFont as font
 import tkMessageBox as messagebox
-
-from urllib import urlretrieve
 
 LABEL_FONT=('TkDefaultFont', 16)
 
@@ -18,15 +15,8 @@ import numpy as np
 
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
-from astropy import coordinates as coord, units as u
-from astropy.io import fits
-
-from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
 import cv2
 
@@ -46,10 +36,6 @@ except ImportError:
     use_camera = False
 else:
     use_camera = True
-
-
-def align_fibre():
-    print("Align fibre")
 
 
 def printCameraInfo(cam):
@@ -129,7 +115,8 @@ class Align(tk.Frame):
         self.fig = plt.figure(figsize=(4, 4), facecolor = "none")
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.get_tk_widget().grid(row=3, column=0, columnspan=2)
-        self.circles = []
+        self.means = np.array([])
+        self.cross = (500, 500)
 
         self.f = "{0}: {1:+.4f}" # format to print values in
         self.indicator_x = tk.Label(self, text = self.f.format("X", self.x), font = LABEL_FONT)
@@ -148,7 +135,7 @@ class Align(tk.Frame):
         self.indicator_y["text"] = self.f.format("Y", self.y)
         self.plot_led_image(self.led_image(self.cam))
         if periodic:
-            self.controller.after(1250, lambda: self.update(periodic = True))
+            self.controller.after(2000, lambda: self.update(periodic = True))
 
     def end(self):
         if self.cam is not None:
@@ -184,8 +171,9 @@ class Align(tk.Frame):
             messagebox.showwarning("Warning", "(one of the) Motor controllers not found")
             self.motor_warning_given = True
             raise ValueError("One of the motor controllers not found")
-        self.plot_led_image(self.led_image(self.cam))
-        align_fibre()
+        image = self.led_image(self.cam)
+        self.find_LEDs(image)
+        self.plot_led_image(image)
         # TEMPORARY:
         self.motor1.identify()
         self.motor2.identify()
@@ -230,24 +218,35 @@ class Align(tk.Frame):
 
     @staticmethod
     def find_sources(image):
-        thresh = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.threshold(image, 100, 255, cv2.THRESH_BINARY)[1]
         data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        print("Found {0} contours".format(len(cnts)))
         means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
-        if len(cnts) > 4:
+        len_orig = len(means)
+        tooclose = []  # remove duplicates
+        for j,m in enumerate(means):
+            dists = np.linalg.norm(m-means[:j], axis=1)
+            tooclose.extend(np.where((0 < dists) & (dists <= 15))[0])
+        means = np.delete(means, tooclose, axis=0)
+        len_del = len(means)
+        if len(means) > 4:
             total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
             good = np.argsort(total_distances)[:4]
             means = means[good]
+        means = means[means[:,0].argsort()] #  sort by x
+        print("Found ({0}, {1}, {2}) contours".format(len_orig, len_del, len(means)))
+        print(means)
         return means
+
+    def find_LEDs(self, image):
+        self.means = self.find_sources(image)
+        self.cross = (self.means[0] + self.means[3])/2.
 
     def plot_led_image(self, data):
         ax = self.fig.gca()
+        ax.clear()
         ax.imshow(data)
         ax.axis("off")
-        for c in self.circles:
-            c.remove()
-        means = self.find_sources(data)
-        self.circles = [plt.Circle(m, 25, facecolor="none", edgecolor="red") for m in means]
-        for c in self.circles:
-            ax.add_artist(c)
+        ax.plot(*self.means[1:3].T, c='r') # vertical
+        ax.plot(*self.means[0::3].T, c='r') # horizontal
+        ax.add_artist(plt.Circle(self.cross, 25, facecolor="none", edgecolor="red"))
         self.fig.canvas.draw()

@@ -88,14 +88,24 @@ data = image.getData()
 shape = (image.getRows(), image.getCols())
 data = data.reshape(shape)
 
-thresh = cv2.threshold(data, 200, 255, cv2.THRESH_BINARY)[1]
+thresh = cv2.threshold(data, 100, 255, cv2.THRESH_BINARY)[1]
 data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 print("Found {0} contours".format(len(cnts)))
 means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
+print(means)
+tooclose = []
+for j,m in enumerate(means):
+    dists = np.linalg.norm(m-means[:j], axis=1)
+    tooclose.extend(np.where((0 < dists) & (dists <= 15))[0])
+means = np.delete(means, tooclose, axis=0)
+print(means)
 if len(cnts) > 4:
     total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
+    print(total_distances)
     good = np.argsort(total_distances)[:4]
     means = means[good]
+    print(means)
+means = means[means[:,0].argsort()] #  sort by x
 plt.imshow(data)
 for m in means:
     c = plt.Circle(m, 25, facecolor="none", edgecolor="red")
