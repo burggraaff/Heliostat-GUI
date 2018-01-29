@@ -173,11 +173,12 @@ class Align(tk.Frame):
             raise ValueError("One of the motor controllers not found")
         image = self.led_image(self.cam)
         self.find_LEDs(image)
-        self.plot_led_image(image)
-        # TEMPORARY:
-        self.motor1.identify()
-        self.motor2.identify()
 
+        # look up / calculate initial estimate for best position
+        # optimise around that position
+
+        # after alignment
+        self.motor1.identify() # placeholder
         self.update()
 
     @staticmethod
@@ -201,7 +202,7 @@ class Align(tk.Frame):
 
     @staticmethod
     def led_image(camera, shutter=0.5, gain=12.0):
-        if camera is None:
+        if camera is None: #  checkerboard placeholder
             imgdata = np.kron([[1, 0] * 4, [0, 1] * 4] * 4, np.ones((10,10)))
         else:
             camera.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
