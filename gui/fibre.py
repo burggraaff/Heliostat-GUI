@@ -28,6 +28,8 @@ from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
+import cv2
+
 try:
     from .PyAPT import APTMotor
 except ImportError:
@@ -127,6 +129,7 @@ class Align(tk.Frame):
         self.fig = plt.figure(figsize=(4, 4), facecolor = "none")
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.get_tk_widget().grid(row=3, column=0, columnspan=2)
+        self.circles = []
 
         self.f = "{0}: {1:+.4f}" # format to print values in
         self.indicator_x = tk.Label(self, text = self.f.format("X", self.x), font = LABEL_FONT)
@@ -225,8 +228,26 @@ class Align(tk.Frame):
 
         return imgdata
 
+    @staticmethod
+    def find_sources(image):
+        thresh = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)[1]
+        data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        print("Found {0} contours".format(len(cnts)))
+        means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
+        if len(cnts) > 4:
+            total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
+            good = np.argsort(total_distances)[:4]
+            means = means[good]
+        return means
+
     def plot_led_image(self, data):
         ax = self.fig.gca()
-        ax.imshow(data, cmap=plt.cm.Greys)
+        ax.imshow(data)
         ax.axis("off")
+        for c in self.circles:
+            c.remove()
+        means = self.find_sources(data)
+        self.circles = [plt.Circle(m, 25, facecolor="none", edgecolor="red") for m in means]
+        for c in self.circles:
+            ax.add_artist(c)
         self.fig.canvas.draw()

@@ -88,7 +88,16 @@ data = image.getData()
 shape = (image.getRows(), image.getCols())
 data = data.reshape(shape)
 
-print(data.min(), data.max())
-
+thresh = cv2.threshold(data, 200, 255, cv2.THRESH_BINARY)[1]
+data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+print("Found {0} contours".format(len(cnts)))
+means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
+if len(cnts) > 4:
+    total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
+    good = np.argsort(total_distances)[:4]
+    means = means[good]
 plt.imshow(data)
+for m in means:
+    c = plt.Circle(m, 25, facecolor="none", edgecolor="red")
+    plt.gca().add_artist(c)
 plt.show()
