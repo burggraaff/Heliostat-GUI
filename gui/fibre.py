@@ -219,5 +219,5 @@ class Align(tk.Frame):
             ax.plot(vertx, verty, c='r') # vertical
             if len(self.means) == 4:
                 ax.plot(*self.means[1:3].T, c='r') # horizontal
-        ax.add_artist(plt.Circle(self.cross, 25, facecolor="none", edgecolor="red"))
+        ax.scatter(*self.cross, c="r", s=35)
         self.fig.canvas.draw()
