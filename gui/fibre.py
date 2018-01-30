@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 try:
-    from .PyAPT import APTMotor
+    from PyAPT import APTMotor
 except ImportError:
     use_motors = False
 else:
@@ -29,6 +29,7 @@ else:
 
 serial_no_1 = 26000369
 serial_no_2 = 26000370
+dll_location = r"gui\APT.dll"
 
 try:
     import PyCapture2 as pc2
@@ -61,7 +62,10 @@ class Aligner(object):
     @staticmethod
     def connect_motor(serial_no):
         print("**** CONNECTING TO MOTOR ****")
-        motor = APTMotor(SerialNum = serial_no)
+        try:
+            motor = APTMotor(SerialNum = serial_no, dllname=dll_location)
+        except Exception as e:
+            print(e)
         try:
             motor.go_home()
         except ValueError:
@@ -202,7 +206,8 @@ class AlignFrame(tk.Frame):
         self.update(periodic = True)
 
     def end(self):
-        self.aligner.end()
+        if self.aligner is not None:
+            self.aligner.end()
 
     def update(self, periodic = False):
         if self.aligner is not None:
@@ -218,7 +223,6 @@ class AlignFrame(tk.Frame):
         except Exception as e:  # placeholder if photo cannot be used
             image = np.kron([[1, 0] * 4, [0, 1] * 4] * 4, np.ones((10,10)))
             leds = fibre = np.array([])
-            raise
         self.plot_led_image(image, leds, fibre)
 
     def plot_led_image(self, image, leds=np.array([]), fibre=np.array([])):
