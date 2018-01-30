@@ -177,7 +177,11 @@ class Align(tk.Frame):
         else:
             camera.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
             camera.setProperty(type=pc2.PROPERTY_TYPE.GAIN, absControl=True, autoManualMode=False, absValue=gain)
-            camera.startCapture()
+            try:
+                camera.startCapture()
+            except:
+                camera.stopCapture()
+                camera.startCapture()
             image = camera.retrieveBuffer()
             camera.stopCapture()
 
@@ -189,35 +193,35 @@ class Align(tk.Frame):
 
     @staticmethod
     def find_sources(image):
-        thresh = cv2.threshold(image, 100, 255, cv2.THRESH_BINARY)[1]
+        blur = cv2.GaussianBlur(image, (11,11), 0)  # blur to remove duplicates
+        thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)[1]
         data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
-        len_orig = len(means)
-        tooclose = []  # remove duplicates
-        for j,m in enumerate(means):
-            dists = np.linalg.norm(m-means[:j], axis=1)
-            tooclose.extend(np.where((0 < dists) & (dists <= 15))[0])
-        means = np.delete(means, tooclose, axis=0)
-        len_del = len(means)
         if len(means) > 4:
             total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
             good = np.argsort(total_distances)[:4]
             means = means[good]
-        means = means[means[:,0].argsort()] #  sort by x
-        print("Found ({0}, {1}, {2}) contours".format(len_orig, len_del, len(means)))
+        means = means[means[:,1].argsort()] #  sort by y
+        print("Found {0} contours".format(len(means)))
         print(means)
         return means
 
     def find_LEDs(self, image):
         self.means = self.find_sources(image)
-        self.cross = (self.means[0] + self.means[3])/2.
+        top = self.means[0]
+        bottom = self.means[-1]
+        self.cross = (top + bottom)/2.
 
     def plot_led_image(self, data):
         ax = self.fig.gca()
         ax.clear()
         ax.imshow(data)
         ax.axis("off")
-        ax.plot(*self.means[1:3].T, c='r') # vertical
-        ax.plot(*self.means[0::3].T, c='r') # horizontal
+        if len(self.means):
+            vertx = [self.means[0][0], self.means[-1][0]]
+            verty = [self.means[0][1], self.means[-1][1]]
+            ax.plot(vertx, verty, c='r') # vertical
+            if len(self.means) == 4:
+                ax.plot(*self.means[1:3].T, c='r') # horizontal
         ax.add_artist(plt.Circle(self.cross, 25, facecolor="none", edgecolor="red"))
         self.fig.canvas.draw()

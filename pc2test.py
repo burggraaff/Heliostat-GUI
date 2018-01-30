@@ -88,7 +88,8 @@ data = image.getData()
 shape = (image.getRows(), image.getCols())
 data = data.reshape(shape)
 
-thresh = cv2.threshold(data, 100, 255, cv2.THRESH_BINARY)[1]
+blur = cv2.GaussianBlur(data, (11,11), 0)
+thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)[1]
 data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 print("Found {0} contours".format(len(cnts)))
 means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
@@ -105,9 +106,16 @@ if len(cnts) > 4:
     good = np.argsort(total_distances)[:4]
     means = means[good]
     print(means)
-means = means[means[:,0].argsort()] #  sort by x
+means = means[means[:,1].argsort()] #  sort by y
+
+top = means[0]
+bottom = means[-1]
+cross = (top + bottom)/2.
+
 plt.imshow(data)
 for m in means:
     c = plt.Circle(m, 25, facecolor="none", edgecolor="red")
     plt.gca().add_artist(c)
+plt.plot([top[0], bottom[0]], [top[1], bottom[1]], c="r")
+plt.scatter(*cross)
 plt.show()
