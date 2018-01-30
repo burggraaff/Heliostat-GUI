@@ -101,7 +101,6 @@ class Align(tk.Frame):
             self.y = self.motor2.getPos()
         self.indicator_x["text"] = self.f.format("X", self.x)
         self.indicator_y["text"] = self.f.format("Y", self.y)
-        self.plot_led_image(self.led_image(self.cam))
         if periodic:
             self.controller.after(2000, lambda: self.update(periodic = True))
 
@@ -141,6 +140,7 @@ class Align(tk.Frame):
             raise ValueError("One of the motor controllers not found")
         image = self.led_image(self.cam)
         self.find_LEDs(image)
+        self.plot_led_image(image)
 
         # look up / calculate initial estimate for best position
         # optimise around that position
@@ -177,11 +177,7 @@ class Align(tk.Frame):
         else:
             camera.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
             camera.setProperty(type=pc2.PROPERTY_TYPE.GAIN, absControl=True, autoManualMode=False, absValue=gain)
-            try:
-                camera.startCapture()
-            except:
-                camera.stopCapture()
-                camera.startCapture()
+            camera.startCapture()
             image = camera.retrieveBuffer()
             camera.stopCapture()
 
