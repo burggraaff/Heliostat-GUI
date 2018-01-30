@@ -102,7 +102,7 @@ class Align(tk.Frame):
         self.indicator_x["text"] = self.f.format("X", self.x)
         self.indicator_y["text"] = self.f.format("Y", self.y)
         if periodic:
-            self.controller.after(2000, lambda: self.update(periodic = True))
+            self.controller.after(1000, lambda: self.update(periodic = True))
 
     def end(self):
         if self.cam is not None:
@@ -117,6 +117,7 @@ class Align(tk.Frame):
         if not use_motors:
             return None
         else:
+            print("**** CONNECTING TO MOTOR ****")
             try:
                 motor = APTMotor(SerialNum = serial_no)
             except:
@@ -127,6 +128,7 @@ class Align(tk.Frame):
             except ValueError:
                 pass  # always gives a ValueError for some reason
             motor.identify()  # blink to show connection clearly
+            print(serial_no, "\n**** CONNECTED ****")
             return motor
 
     def align(self):
@@ -142,12 +144,23 @@ class Align(tk.Frame):
         self.find_LEDs(image)
         self.plot_led_image(image)
 
+        guess = self.initial_estimate()
+        print("Moving to", guess)
+        self.move_motors(*guess)
         # look up / calculate initial estimate for best position
         # optimise around that position
 
         # after alignment
-        self.motor1.identify() # placeholder
         self.update()
+
+    def move_motors(self, x, y, v=0.5):
+        self.motor1.mcAbs(x, moveVel=v)
+        self.motor2.mcAbs(y, moveVel=v)
+
+    def initial_estimate(self):
+        x = round(self.cross[0]/1280, 4)
+        y = round(self.cross[1]/1024, 4)
+        return (x, y)
 
     @staticmethod
     def connect_camera(use_camera):
