@@ -128,6 +128,7 @@ class Align(tk.Frame):
             except ValueError:
                 pass  # always gives a ValueError for some reason
             motor.identify()  # blink to show connection clearly
+            motor.table = np.loadtxt("static/{0}".format(serial_no))
             print(serial_no, "\n**** CONNECTED ****")
             return motor
 
@@ -158,9 +159,13 @@ class Align(tk.Frame):
         self.motor2.mcAbs(y, moveVel=v)
 
     def initial_estimate(self):
-        x = round(self.cross[0]/1280, 4)
-        y = round(self.cross[1]/1024, 4)
-        return (x, y)
+        print(self.cross)
+        indx = int(round(self.cross[0]/1280 * 9))
+        indy = int(round(self.cross[1]/1024 * 9))
+        print(indx, indy)
+        posx = self.motor1.table[indx, indy]
+        posy = self.motor2.table[indx, indy]
+        return posx, posy
 
     @staticmethod
     def connect_camera(use_camera):

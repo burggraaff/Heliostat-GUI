@@ -54,7 +54,7 @@ def sun_satellite(saveto = "sun.jpg"):
     url = "http://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg"
     urlretrieve(url, saveto)
 
-def load_sun(dynamic = "sun.jpg", static = "static_images/sun_static.jpg"):
+def load_sun(dynamic = "sun.jpg", static = "static/sun_static.jpg"):
     try:
         sun_satellite(dynamic)
         img = Image.open(dynamic)
@@ -93,7 +93,7 @@ def rotation_angle(day = day_of_year):
     return rotation_angle
 
 def sun_rotate(img, angle):
-    top=Image.open('static_images/Overlay.jpg')
+    top=Image.open('static/Overlay.jpg')
     r,g,b=top.split()
     mask=Image.merge('L', (b,)) # to only copy text
     img.paste(top, (0,0), mask)
