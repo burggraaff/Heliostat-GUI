@@ -8,7 +8,7 @@ from sys import version_info
 assert version_info[0] == 2 and version_info[1] == 7,\
      "This GUI is only compatible with Python 2.7.x"
 
-from .fibre import Align
+from .fibre import AlignFrame
 from .sun import Sun
 from .spectrum import Spectrum
 
@@ -46,7 +46,7 @@ class Controls(tk.Frame):
         self.parent = parent
         self.controller = controller
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
-        self.align = Align(parent = self, controller = self.controller)
+        self.align = AlignFrame(parent = self, controller = self.controller)
         self.sun = Sun(parent = self, controller = self.controller)
         self.align.grid(row = 0, column = 0, sticky = "news", pady = 5)
         self.sun.grid(row = 1, column = 0, sticky = "news", pady = 5)
