@@ -4,33 +4,21 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
+from sys import version_info
+assert version_info[0] == 2 and version_info[1] == 7,\
+     "This GUI is only compatible with Python 2.7.x"
+
 from .fibre import Align
 from .sun import Sun
 from .spectrum import Spectrum
 
-import sys
-pyversion = sys.version_info[0]
+import Tkinter as tk
+from Tkinter import *
+from ttk import *
+import tkFont as font
+import tkMessageBox
 
-if pyversion == 2:
-    import Tkinter as tk
-    from Tkinter import *
-    from ttk import *
-    import tkFont as font
-    import tkMessageBox
-
-    from urllib import urlretrieve
-
-elif pyversion == 3:
-    import tkinter as tk
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font
-    from tkinter import messagebox as tkMessageBox
-
-    from urllib.request import urlretrieve
-
-else:
-    print("Sorry, this module is only available for Python versions 2 and 3. You are using Python {0}".format(pyversion))
+from urllib import urlretrieve
 
 LARGE_FONT= ('TkDefaultFont', 14)
 LABEL_FONT=('TkDefaultFont', 16)
@@ -39,7 +27,6 @@ import numpy as np
 import ephem
 import datetime
 
-import matplotlib.image as mpimg
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -52,9 +39,6 @@ from astropy.io import fits
 
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageTk
 
-
-#import Fitting_script as fs
-
 day_of_year = datetime.datetime.now().timetuple().tm_yday
 
 class Controls(tk.Frame):
@@ -64,8 +48,8 @@ class Controls(tk.Frame):
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
         self.align = Align(parent = self, controller = self.controller)
         self.sun = Sun(parent = self, controller = self.controller)
-        self.align.grid(row = 0, column = 0, sticky = "news", pady = 10)
-        self.sun.grid(row = 1, column = 0, sticky = "news", pady = 10)
+        self.align.grid(row = 0, column = 0, sticky = "news", pady = 5)
+        self.sun.grid(row = 1, column = 0, sticky = "news", pady = 5)
 
 def img(lang):
     return Image.open("localisation/flags/{0}.png".format(lang)).resize((80, 55))
@@ -78,7 +62,7 @@ class Page(tk.Frame): # individual page within interface
         self.langfile = langfile
         self.translatables = []
 
-        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = lambda: quit(self.controller))
+        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = self.end)
         self.quit_button.grid(row = 0, column = 5000, padx = 2.5, pady = 2.5, sticky = tk.NE) # column = 5000 ensures it is always on the far right
 
         if previous is not None:
@@ -87,7 +71,6 @@ class Page(tk.Frame): # individual page within interface
         if nextpage is not None:
             self.next_button = tk.Button(self, text = "NEXT", font = LARGE_FONT, height = 2, width = 5, command = lambda: self.controller.show_frame(nextpage))
             self.next_button.grid(row = 1000, column = 5000, padx = 2.5, pady = 2.5, sticky = "news")
-
 
     def translate(self, lang):
         with open("localisation/{0}/{1}".format(self.langfile, lang)) as f:
@@ -105,6 +88,10 @@ class Page(tk.Frame): # individual page within interface
 
     def show(self):
         self.lift()
+
+    def end(self):
+        end(self.controller)
+
 
 class Root(Tk): # main object, controls the programme
     def __init__(self, pages, *args, **kwargs):
@@ -159,7 +146,7 @@ class Root(Tk): # main object, controls the programme
         self.attributes("-fullscreen", False)
         self.wm_geometry(self.geom)
 
-def quit(root):
-    root.quit()
-    root.destroy()
+def end(GUI):
+    GUI.quit()
+    GUI.destroy()
     print("Quit GUI")
