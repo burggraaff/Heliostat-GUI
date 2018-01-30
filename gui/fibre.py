@@ -51,38 +51,6 @@ def printCameraInfo(cam):
     print("")
 
 
-def enableEmbeddedTimeStamp(cam, enableTimeStamp):
-    embeddedInfo = cam.getEmbeddedImageInfo()
-    if embeddedInfo.available.timestamp:
-        cam.setEmbeddedImageInfo(timestamp = enableTimeStamp)
-        if(enableTimeStamp):
-            print("TimeStamp is enabled.")
-        else:
-            print("TimeStamp is disabled.")
-
-
-def grabImages(cam, numImagesToGrab):
-    prevts = None
-    cam.startCapture()
-    for i in range(numImagesToGrab):
-        try:
-            image = cam.retrieveBuffer()
-        except pc2.Fc2error as fc2Err:
-            print("Error retrieving buffer : ", fc2Err)
-            continue
-
-        ts = image.getTimeStamp()
-        if(prevts):
-            diff = (ts.cycleSeconds - prevts.cycleSeconds) * 8000 + (ts.cycleCount - prevts.cycleCount)
-            print("Timestamp [", ts.cycleSeconds, ts.cycleCount, "] -", diff)
-        prevts = ts
-
-    cam.stopCapture()
-    print("Saving the last image to LED_photo.png")
-    image.save("LED_photo.png", pc2.IMAGE_FILE_FORMAT.PNG)
-    return image
-
-
 class Align(tk.Frame):
     """
     Object that aids in aligning the fibre
@@ -196,7 +164,9 @@ class Align(tk.Frame):
             cam = pc2.Camera()
             cam.connect(bus.getCameraFromIndex(0))
             printCameraInfo(cam)
-            enableEmbeddedTimeStamp(cam, True)
+            embeddedInfo = cam.getEmbeddedImageInfo()
+            if embeddedInfo.available.timestamp:
+                cam.setEmbeddedImageInfo(timestamp = True)
             print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
             return cam
 
