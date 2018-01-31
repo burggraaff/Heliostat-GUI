@@ -55,6 +55,9 @@ class Aligner(object):
     def get_current_positions(self):
         return self.motor1.getPos(), self.motor2.getPos()
 
+    def get_fibre_position(self):
+        return self.fibre_coords
+
     @staticmethod
     def connect_motor(serial_no):
         print("**** CONNECTING TO MOTOR ****")
@@ -67,7 +70,6 @@ class Aligner(object):
         except ValueError:
             pass  # always gives a ValueError for some reason
         motor.identify()  # blink to show connection clearly
-        motor.table = np.loadtxt("static/{0}.txt".format(serial_no))
         print(serial_no, "\n**** CONNECTED ****")
         return motor
 
