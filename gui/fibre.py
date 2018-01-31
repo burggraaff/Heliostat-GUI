@@ -36,14 +36,10 @@ else:
 
 class Aligner(object):
     def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
+        self.camera = self.connect_camera()
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
-        try:
-            self.camera = self.connect_camera()
-        except Exception as e: # correctly shut down motors if camera failed to connect
-            self.motor1.cleanUpAPT()
-            self.motor2.cleanUpAPT()
-            raise #  re-raise exception
+
         self.led_coords = np.array([])
         self.fibre_coords = (-1, -1)
 
@@ -155,7 +151,6 @@ class Camera(pc2.Camera):
         print("Resolution - ", camInfo.sensorResolution)
         print("Firmware version - ", camInfo.firmwareVersion)
         print("Firmware build time - ", camInfo.firmwareBuildTime)
-        print("")
 
     def led_image(self, shutter=0.5, gain=12.0):
         self.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
