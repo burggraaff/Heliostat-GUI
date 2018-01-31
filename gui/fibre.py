@@ -148,7 +148,6 @@ class Camera(pc2.Camera):
         print("Resolution - ", camInfo.sensorResolution)
         print("Firmware version - ", camInfo.firmwareVersion)
         print("Firmware build time - ", camInfo.firmwareBuildTime)
-        print("")
 
     def led_image(self, shutter=0.5, gain=12.0):
         self.setProperty(type=pc2.PROPERTY_TYPE.SHUTTER, absControl=True, autoManualMode=False, absValue=shutter)
