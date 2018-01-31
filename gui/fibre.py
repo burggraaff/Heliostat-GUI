@@ -34,9 +34,18 @@ except ImportError:
 else:
     use_camera = True
 
+try:
+    from pymba import Vimba
+except ImportError:
+    opt_camera = False
+else:
+    opt_camera = True
+
 class Aligner(object):
     def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
-        self.camera = self.connect_camera()
+        self.led_camera = self.connect_led_camera()
+        self.vimba = Vimba() ; self.vimba.startup()
+        self.opt_camera = self.connect_optimisation_camera(self.vimba)
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
 
@@ -48,7 +57,9 @@ class Aligner(object):
     def end(self):
         self.motor1.cleanUpAPT()
         self.motor2.cleanUpAPT()
-        self.camera.disconnect()
+        self.led_camera.disconnect()
+        self.opt_camera.revokeAllFrames()
+        self.vimba.shutdown()
 
     def get_current_positions(self):
         return self.motor1.getPos(), self.motor2.getPos()
@@ -72,7 +83,7 @@ class Aligner(object):
         return motor
 
     @staticmethod
-    def connect_camera():
+    def connect_led_camera():
         print("\n***** CONNECTING TO FIBREHEAD LED CAMERA *****")
         bus = pc2.BusManager()
         numCams = bus.getNumOfCameras()
@@ -80,6 +91,34 @@ class Aligner(object):
         camera = Camera(bus)
         print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
         return camera
+
+    @staticmethod
+    def connect_optimisation_camera(vimba):
+        print("\n***** CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****")
+        cameraIds = vimba.getCameraIds()
+        camera = vimba.getCamera(cameraIds[0])
+        camera.openCamera()
+        camera.AcquisitionMode = "SingleFrame"
+        camera.ExposureTime = 10000.
+        print("\n***** FINISHED CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****\n")
+        return camera
+
+    def opt_photo(self):
+        frame = self.opt_camera.getFrame()
+        frame.announceFrame()
+        self.opt_camera.startCapture()
+        frame.queueFrameCapture()
+        self.opt_camera.runFeatureCommand("AcquisitionStart")
+        self.opt_camera.runFeatureCommand("AcquisitionStop")
+        frame.waitFrameCapture()
+        data = frame.getImage()
+        self.opt_camera.endCapture()
+        frame.revokeFrame()
+        return data
+
+    def intensity(self):
+        image = self.opt_photo()
+        return round(image.mean(), 2)
 
     def move_motors(self, x, y, v=0.5):
         print("Moving to ({0}, {1})".format(x,y))
@@ -116,12 +155,9 @@ class Aligner(object):
         posy = self.motor2.table[indx, indy]
         return posx, posy
 
-    def intensity(self):
-        return 40000
-
     def align(self):
         # use camera to find fibre for inistial estimate
-        image = self.camera.led_image()
+        image = self.led_camera.led_image()
         self.find_LEDs(image)  # fibre position now in self.fibre_coords
 
         # look up / calculate initial estimate for best position

@@ -1,7 +1,7 @@
 from __future__ import print_function
 import gui
 from gui import tk, LABEL_FONT
-from gui.fibre import Aligner, serial_no_1, serial_no_2
+from gui.fibre import Aligner
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -77,14 +77,13 @@ class FitFrame(tk.Frame):
     def update(self):
         self.x, self.y = self.aligner.get_current_positions()
         self.fx, self.fy = self.aligner.get_fibre_position()
-        self.l = self.aligner.intensity()
         self.indicator_x["text"] = self.f.format("X", self.x)
         self.indicator_y["text"] = self.f.format("Y", self.y)
         self.indicator_f["text"] = "F: ({0:.0f}, {1:.0f})".format(self.fx, self.fy)
         self.indicator_l["text"] = "L: {0}".format(self.l)
 
     def photo(self):
-        self.image = self.aligner.camera.led_image()
+        self.image = self.aligner.led_camera.led_image()
         self.plot()
 
     def find_leds(self):
@@ -93,7 +92,9 @@ class FitFrame(tk.Frame):
         self.plot()
 
     def optimise(self):
-        pass
+        for j in range(5):
+            self.l = self.aligner.intensity()
+            self.update()
 
     def save(self):
         self.update()
