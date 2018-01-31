@@ -5,10 +5,6 @@ Module containing classes and functions to use for the heliostat GUIs.
 from __future__ import print_function, division
 
 import Tkinter as tk
-from Tkinter import *
-from ttk import *
-import tkMessageBox as messagebox
-
 LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
