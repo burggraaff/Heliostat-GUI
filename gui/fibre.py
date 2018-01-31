@@ -35,7 +35,7 @@ else:
     use_camera = True
 
 class Aligner(object):
-    def __init__(self, serial_1 = serial_no_1, serial_2 = serial_no_2):
+    def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
         try:
@@ -46,6 +46,8 @@ class Aligner(object):
             raise #  re-raise exception
         self.led_coords = np.array([])
         self.fibre_coords = (-1, -1)
+
+        self.table = np.loadtxt(table)
 
     def end(self):
         self.motor1.cleanUpAPT()
