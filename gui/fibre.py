@@ -155,6 +155,9 @@ class Aligner(object):
         posy = self.motor2.table[indx, indy]
         return posx, posy
 
+    def optimise(self):
+        pass
+
     def align(self):
         # use camera to find fibre for inistial estimate
         image = self.led_camera.led_image()
@@ -163,7 +166,7 @@ class Aligner(object):
         # look up / calculate initial estimate for best position
         guess = self.initial_estimate()
         self.move_motors(*guess)
-        # optimise around that position
+        self.optimise()
 
         return image, self.led_coords, self.fibre_coords
 
