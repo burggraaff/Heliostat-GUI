@@ -41,17 +41,20 @@ class FitFrame(tk.Frame):
         tk.Frame.__init__(self, self.parent, *args, **kwargs)
         self.x = self.y = -9999.9999
         self.fx = self.fy = -1
+        self.l = 0
 
         self.aligner = Aligner()
 
+        self.b_inte = tk.Button(self, text = "UPDATE", font = LABEL_FONT, height = 2, width = 10, command = self.update)
+        self.b_inte.grid(row = 0, column = 2, sticky = "news")
         self.b_plot = tk.Button(self, text = "PHOTO", font = LABEL_FONT, height = 2, width = 10, command = self.photo)
-        self.b_plot.grid(row = 0, column = 2, sticky = "news")
+        self.b_plot.grid(row = 1, column = 2, sticky = "news")
         self.b_find = tk.Button(self, text = "FIND LEDS", font = LABEL_FONT, height = 2, width = 10, command = self.find_leds)
-        self.b_find.grid(row = 1, column = 2, sticky = "news")
+        self.b_find.grid(row = 2, column = 2, sticky = "news")
         self.b_opti = tk.Button(self, text = "OPTIMISE", font = LABEL_FONT, height = 2, width = 10, command = self.optimise)
-        self.b_opti.grid(row = 2, column = 2, sticky = "news")
+        self.b_opti.grid(row = 3, column = 2, sticky = "news")
         self.b_save = tk.Button(self, text = "SAVE", font = LABEL_FONT, height = 2, width = 10, command = self.save)
-        self.b_save.grid(row = 3, column = 2, sticky = "news")
+        self.b_save.grid(row = 4, column = 2, sticky = "news")
 
         self.fig = plt.figure(figsize=(10,10), facecolor = "none")
         self.canvas = FigureCanvasTkAgg(self.fig, self)
@@ -64,21 +67,21 @@ class FitFrame(tk.Frame):
         self.indicator_y.grid(row = 1, column = 1, sticky = "w")
         self.indicator_f = tk.Label(self, text = "F: (-1, -1)", font = LABEL_FONT)
         self.indicator_f.grid(row = 2, column = 1, sticky = "w")
-
-        self.update(periodic = True)
+        self.indicator_l = tk.Label(self, text = "L: 00000", font = LABEL_FONT)
+        self.indicator_l.grid(row = 3, column = 1, sticky = "w")
 
     def end(self):
         if self.aligner is not None:
             self.aligner.end()
 
-    def update(self, periodic = False):
+    def update(self):
         self.x, self.y = self.aligner.get_current_positions()
         self.fx, self.fy = self.aligner.get_fibre_position()
+        self.l = self.aligner.intensity()
         self.indicator_x["text"] = self.f.format("X", self.x)
         self.indicator_y["text"] = self.f.format("Y", self.y)
         self.indicator_f["text"] = "F: ({0:.0f}, {1:.0f})".format(self.fx, self.fy)
-        if periodic:
-            self.controller.after(1000, lambda: self.update(periodic = True))
+        self.indicator_l["text"] = "L: {0}".format(self.l)
 
     def photo(self):
         self.image = self.aligner.camera.led_image()

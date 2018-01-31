@@ -118,6 +118,9 @@ class Aligner(object):
         posy = self.motor2.table[indx, indy]
         return posx, posy
 
+    def intensity(self):
+        return 40000
+
     def align(self):
         # use camera to find fibre for inistial estimate
         image = self.camera.led_image()
