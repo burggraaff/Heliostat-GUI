@@ -36,14 +36,10 @@ else:
 
 class Aligner(object):
     def __init__(self, serial_1 = serial_no_1, serial_2 = serial_no_2):
+        self.camera = self.connect_camera()
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
-        try:
-            self.camera = self.connect_camera()
-        except Exception as e: # correctly shut down motors if camera failed to connect
-            self.motor1.cleanUpAPT()
-            self.motor2.cleanUpAPT()
-            raise #  re-raise exception
+
         self.led_coords = np.array([])
         self.fibre_coords = (-1, -1)
 
