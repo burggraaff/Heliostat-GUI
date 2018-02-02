@@ -131,7 +131,7 @@ class Aligner(object):
         thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)[1]
         data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
-        if len(means) > 4:
+        if len(means) > 4:  # find cluster of four close sources
             total_distances = [np.linalg.norm(x-means, axis=1).sum() for x in means]
             good = np.argsort(total_distances)[:4]
             means = means[good]
