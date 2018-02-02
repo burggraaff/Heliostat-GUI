@@ -127,7 +127,7 @@ class Aligner(object):
 
     @staticmethod
     def find_sources(image):
-        blur = cv2.GaussianBlur(image, (11,11), 0)  # blur to remove duplicates
+        blur = cv2.GaussianBlur(image, (5,5), 0)  # blur to remove duplicates
         thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)[1]
         data2,cnts,hie = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         means = np.array([x[0] for x in [np.mean(c, axis=0) for c in cnts]])
