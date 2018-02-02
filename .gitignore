@@ -1,6 +1,9 @@
 sun.jpg
 LED_photo.png
 *.kate-swp
+test*.fit
+SBIG/Sbigudrv.py
+SBIG/Sbigudrv_wrap.c
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
