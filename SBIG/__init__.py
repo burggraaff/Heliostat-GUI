@@ -1,1 +1,1 @@
-import proggel
+import speccamera

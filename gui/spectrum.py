@@ -4,6 +4,8 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
+from SBIG.speccamera import Camera
+
 from Tkinter import Frame, Button, Label, Entry
 import tkFont as font
 import tkMessageBox as messagebox
