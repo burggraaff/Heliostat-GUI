@@ -35,7 +35,23 @@ else:
     use_camera = True
 
 class Aligner(object):
+    """
+    Object that handles the alignment of the fibre, including controlling
+    the motors and talking to the fibrehead LED camera.
+    """
     def __init__(self, serial_1 = serial_no_1, serial_2 = serial_no_2):
+        """
+        Initialise Aligner object. Looks for Thorlabs motors with given
+        serial numbers, and for any PointGrey camera.
+        Note: maybe use serial number for PG camera as well?
+        
+        Parameters
+        ----------
+        serial_1: int
+            Serial number of first Thorlabs motor
+        serial_2: int
+            Serial number of second Thorlabs motor
+        """
         self.camera = self.connect_camera()
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
@@ -44,6 +60,9 @@ class Aligner(object):
         self.fibre_coords = (-1, -1)
 
     def end(self):
+        """
+        Disconnect motors and camera to prevent issues when re-starting.
+        """
         self.motor1.cleanUpAPT()
         self.motor2.cleanUpAPT()
         self.camera.disconnect()
@@ -126,6 +145,9 @@ class Aligner(object):
 
 
 class Camera(pc2.Camera):
+    """
+    PointGrey Camera object.
+    """
     def __init__(self, bus, index=0):
         pc2.Camera.__init__(self)
         self.connect(bus.getCameraFromIndex(index))
