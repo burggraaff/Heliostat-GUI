@@ -48,9 +48,11 @@ class Camera(object):
         self._open_driver()
         self._open_device()
         self._establish_link()
+        self._get_info()
         self._set_temperature(self.working_temperature, cool=True)
         self._activate_fan()
         self._wait_while_cooling()
+        self.print_info()
 
     def shutdown(self):
         self._deactivate_fan()
@@ -246,3 +248,21 @@ class Camera(object):
         erp.ccd = sbig.CCD_IMAGING
         err = sbig.SBIGUnivDrvCommand(sbig.CC_END_READOUT, erp, None)
         check_output(err, "Ended readout", "Failed to end readout")
+
+    def _get_info(self):
+        gcip = sbig.GetCCDInfoParams()
+        gcip.request = sbig.CCD_INFO_IMAGING
+        gcir = sbig.GetCCDInfoResults0()
+        err = sbig.SBIGUnivDrvCommand(sbig.CC_GET_CCD_INFO, gcip, gcir)
+        self.info = gcir
+
+    def print_info(self):
+        self._get_info()
+        print("Name:", self.info.name)
+        print("Readout modes:", self.info.readoutModes)
+        print("Camera type:", self.info.cameraType)
+        print("Height:", self.info.readoutInfo.height)
+        print("Width:", self.info.readoutInfo.width)
+        print("Readout mode:", self.info.readoutInfo.mode)
+        print("Pixel width:", self.info.readoutInfo.pixelWidth)
+        print("Gain:", self.info.readoutInfo.gain)
