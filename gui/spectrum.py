@@ -37,6 +37,8 @@ class Spectrum(Frame):
         self.controller = controller
         Frame.__init__(self, self.parent, *args, **kwargs)
 
+        self.camera = Camera()
+
         self.filename = "N/A"
 
         self.button = Button(self, text = "TAKE SPECTRUM", font = LARGE_FONT, height = 2, width = 3, command = self.new_spectrum)
