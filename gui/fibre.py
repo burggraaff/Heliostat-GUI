@@ -201,7 +201,10 @@ class Aligner(object):
         # look up / calculate initial estimate for best position
         guess = self.initial_estimate()
         self.move_motors(*guess)
-        self.optimise()
+
+        # find optimal values around estimate and move there
+        x, y = self.optimise()
+        self.move_motors(x, y)
 
         return image, self.led_coords, self.fibre_coords
 
