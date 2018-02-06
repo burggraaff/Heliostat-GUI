@@ -8,6 +8,7 @@ import Tkinter as tk
 LABEL_FONT=('TkDefaultFont', 16)
 
 import numpy as np
+from scipy.optimize import curve_fit
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -54,6 +55,9 @@ class Aligner(object):
         PyAPT objects for controlling the tip/tilt motors on the fibrehead.
     table:
         Table containing known alignments of fibrehead.
+    initial_estimate:
+        Function giving an initial estimate for the best alignment based on
+        the location of the fibrehead.
     """
 
     def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
@@ -71,6 +75,7 @@ class Aligner(object):
         self.fibre_coords = (-1, -1)
 
         self.table = np.loadtxt(table)
+        self.initial_estimate = self.fit()
 
     def end(self):
         self.motor1.cleanUpAPT()
@@ -164,14 +169,36 @@ class Aligner(object):
         bottom = self.led_coords[-1]
         self.fibre_coords = (top + bottom)/2.
 
-    def initial_estimate(self):
-        print("Fibre at", self.fibre_coords)
-        indx = int(round(self.fibre_coords[0]/1280 * 9))
-        indy = int(round(self.fibre_coords[1]/1024 * 9))
-        print("Indices", indx, indy)
-        posx = self.motor1.table[indx, indy]
-        posy = self.motor2.table[indx, indy]
-        return posx, posy
+    def fit(self):
+        """
+        Fit a function to estimate the optimal alignment based on known values.
+
+        Currently assumes there is a relation x_led-x_fiber and y_led-y_fibre
+        but not cross-terms. This has NOT been tested!
+
+        Parameters
+        ----------
+        order: int
+            Order of polynomial to return
+
+        Returns
+        -------
+        f:
+            Function that gives the initial estimate.
+        """
+        def predict_one_motor(led_coords, c0, c1, c2):  # linear for now
+            return c0 * led_coords[0] + c1 * led_coords[1] + c2
+
+        poptx, pcovx = curve_fit(predict_one_motor, self.table[:,:2].T, self.table[:,2])
+        popty, pcovy = curve_fit(predict_one_motor, self.table[:,:2].T, self.table[:,3])
+
+        def predict_both(led_coords):
+            x = predict_one_motor(led_coords, *poptx)
+            y = predict_one_motor(led_coords, *popty)
+            return x, y
+
+        return predict_both
+
 
     def optimise(self, xrange=0.05, yrange=0.05, steps=5):
         """
