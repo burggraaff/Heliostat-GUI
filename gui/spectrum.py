@@ -37,7 +37,10 @@ class Spectrum(Frame):
         self.controller = controller
         Frame.__init__(self, self.parent, *args, **kwargs)
 
-        self.camera = Camera()
+        try:
+            self.camera = Camera()
+        except:  # to allow GUI use without spectral camera
+            self.camera = None
 
         self.filename = "N/A"
 
@@ -59,25 +62,25 @@ class Spectrum(Frame):
         self.read_data()
         self.plot()
 
-    def expose(self):
-        self.filename = expose(self.time.get())
+    def expose(self): 
+        if camera is None:  # test mode -- immediately return test image
+            return "example_fits_files/Mooi"
+        try:
+            time = float(self.time.get())
+        except:
+            message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
+            messagebox.showerror("Error", message)
+            raise ValueError(message)
+        print("Exposing for {0} seconds".format(time))
+        # ACTUAL EXPOSURE TO BE ADDED HERE
+        self.filename = timestamp() + ".fit"
+        return "example_fits_files/Mooi"
 
     def read_data(self):
         self.data = reduce_spectrum(self.filename)
 
     def plot(self):
         plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = self.filename + ".fit")
-
-def expose(exposure_time):
-    try:
-        time = float(exposure_time)
-    except:
-        messagebox.showerror("Error", "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
-        raise ValueError("Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
-    print("Exposing for {0} seconds".format(time))
-    # ACTUAL EXPOSURE TO BE ADDED HERE
-    filename = timestamp() + ".fit"
-    return "example_fits_files/Mooi"
 
 def reduce_spectrum(filename):
     raw_data = fits.getdata(filename + ".fit").astype(np.int16)
