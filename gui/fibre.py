@@ -155,8 +155,43 @@ class Aligner(object):
         posy = self.motor2.table[indx, indy]
         return posx, posy
 
-    def optimise(self):
-        pass
+    def optimise(self, xrange=0.05, yrange=0.05, steps=5):
+        """
+        Try positions around the current one to find the one that lets the most
+        light in.
+
+        Parameters
+        ----------
+        xrange, yrange: float
+            Range around the current position to try.
+            (current - xrange, current + xrange)
+            (current - yrange, current + yrange)
+        steps: int
+            Number of steps to try in either direction.
+        """
+        x_now, y_now = self.get_current_positions()
+        range_x = np.linspace(x_now - xrange, x_now + xrange, num=steps)
+        range_y = np.linspace(x_now - xrange, x_now + xrange, num=steps)
+        intensities = np.zeros((steps, steps), dtype=np.uint16)
+        for i in range(steps):
+            for j in range(steps):
+                x, y = range_x[i], range_y[j]
+                self.move_motors(x, y)
+                intensities[i, j] = self.intensity()
+
+        best_ind = intensities.argmax()
+        best_x_ind, best_y_ind = np.unravel_index(best_ind, intensities.shape)
+        best_x, best_y = range_x[best_x_ind], range_y[best_y_ind]
+
+        # TEMPORARY TO CHECK
+        fig, ax = plt.subplots()
+        ax.imshow(intensities)
+        ax.xticks(range_x)
+        ax.yticks(range_y)
+        fig.savefig("test_intensity.png")
+        plt.close(fig)
+
+        return best_x, best_y
 
     def align(self):
         # use camera to find fibre for inistial estimate

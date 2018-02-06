@@ -1,6 +1,7 @@
 static/fibre_positions.txt
 sun.jpg
 LED_photo.png
+test*.png
 *.kate-swp
 
 # Byte-compiled / optimized / DLL files
