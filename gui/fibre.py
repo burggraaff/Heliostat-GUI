@@ -159,7 +159,7 @@ class Camera(pc2.Camera):
 
 class AlignFrame(tk.Frame):
     """
-    Object that aids in aligning the fibre
+    Frame that displays the alignment of the fibre.
     """
     def __init__(self, parent, controller, *args, **kwargs):
         """
@@ -167,9 +167,8 @@ class AlignFrame(tk.Frame):
 
         Parameters
         ----------
-        self: self
-
         parent: parent frame, to draw this one in
+        controller: controller object that handles timing calls
         """
         self.parent = parent
         self.controller = controller
