@@ -129,6 +129,22 @@ class Camera(object):
         check_output(err, "Deactivated fan", "Failed to deactivate fan")
 
     def spectrum(self, exposure_time, filename):
+        """
+        Take dark and light images.
+        Bias is not necessary because dark and light have the same exposure time.
+
+        Images are saved to <filename>.fit and <filename>_DarkCurrent.fit. Note
+        that currently no header is included but this can be implemented easily.
+
+        Parameters
+        ----------
+        exposure_time: float
+            Time for which to expose light and dark images (each).
+        filename: str
+            Filename for saving the images.
+            Light goes to <filename>.fit; Dark to <filename>_DarkCurrent.fit
+        """
+
         # bias is not needed because dark and light are the same exposure time
         dark_image = self.dark(exposure_time)
         light_image = self.light(exposure_time)
