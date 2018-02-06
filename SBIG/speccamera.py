@@ -45,6 +45,12 @@ class Camera(object):
         self.startup()
 
     def startup(self):
+        """
+        Start the camera up:
+            Connect to the device
+            Start cooling the camera
+            Print information of the camera
+        """
         self._open_driver()
         self._open_device()
         self._establish_link()
@@ -55,6 +61,10 @@ class Camera(object):
         self.print_info()
 
     def shutdown(self):
+        """
+        Shut the camera down:
+            Disconnect, stop cooling
+        """
         self._deactivate_fan()
         self._close_device()
         self._close_driver()
@@ -111,6 +121,10 @@ class Camera(object):
         return cooling, fan, current_temperature
 
     def print_temperature(self):
+        """
+        Print the current temperature of the CCD as well as information on
+        whether it is being cooled and if the fan is on.
+        """
         cooling, fan, temp = self._query_temperature()
         cooling_str = "Cooling" if cooling else "Not cooling"
         fan_str = "Fan ON" if fan else "FAN OFF"
@@ -157,20 +171,33 @@ class Camera(object):
         hdu_light.writeto(filename+".fit", overwrite=True)
 
     def take_image(self, exposure_time, shutter=sbig.SC_OPEN_SHUTTER):
+        """
+        Take an image with a given exposure time and shutter.
+        N.B. usually you will prefer to use light, dark or bias.
+        """
         print("Current temperature:", self._query_temperature[2])
         self._expose(exposure_time, shutter=shutter)
         image = self._readout()
         return image
 
     def light(self, exposure_time):
+        """
+        Take a light image.
+        """
         image = self.take_image(exposure_time, shutter=sbig.SC_OPEN_SHUTTER)
         return image
 
     def dark(self, exposure_time):
+        """
+        Take a darkcurrent image.
+        """
         image = self.take_image(exposure_time, shutter=sbig.SC_CLOSE_SHUTTER)
         return image
 
     def bias(self):
+        """
+        Take a bias image.
+        """
         image = self.take_image(0., shutter=sbig.SC_CLOSE_SHUTTER)
         return image
 
@@ -257,6 +284,9 @@ class Camera(object):
         self.info = gcir
 
     def print_info(self):
+        """
+        Print information on the camera and CCD.
+        """
         self._get_info()
         print("Name:", self.info.name)
         print("Readout modes:", self.info.readoutModes)
