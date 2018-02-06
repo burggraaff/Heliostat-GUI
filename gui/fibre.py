@@ -42,7 +42,25 @@ else:
     opt_camera = True
 
 class Aligner(object):
+    """
+    Attributes
+    ----------
+    led_camera:
+        PointGrey camera object to control fibrehead LED camera.
+    vimba, opt_camera:
+        Vimba session and camera object (AlliedVision) for controlling SAILORS
+        intensity camera.
+    motor1, motor2:
+        PyAPT objects for controlling the tip/tilt motors on the fibrehead.
+    table:
+        Table containing known alignments of fibrehead.
+    """
+
     def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
+        """
+        table: str
+            Location of table with known alignments of fibrehead.
+        """
         self.led_camera = self.connect_led_camera()
         self.vimba = Vimba() ; self.vimba.startup()
         self.opt_camera = self.connect_optimisation_camera(self.vimba)
