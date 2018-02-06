@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 import time
-import numpy
+import numpy as np
 from astropy.io import fits
 
 import Sbigudrv as sbig
@@ -24,7 +24,23 @@ def status(command):
 
 
 class Camera(object):
+    """
+    Class that handles the SBIG camera, wrapping the C interface with simple
+    python functions.
+
+    Based on `proggel` module by Gilles/Pim.
+    """
     def __init__(self, working_temperature=0.0):
+        """
+        Create the Camera object and start it up.
+        The camera will start to cool down, which may cause the programme to
+        hang for a short time.
+
+        Parameters
+        ----------
+        working_temperature: float
+            Temperature to cool the camera down to while taking images
+        """
         self.working_temperature = working_temperature
         self.startup()
 
@@ -34,11 +50,7 @@ class Camera(object):
         self._establish_link()
         self._set_temperature(self.working_temperature, cool=True)
         self._activate_fan()
-        while self._query_temperature[2] > self.working_temperature:
-            #  wait for camera to cool down
-            time.sleep(1)
-            print("Current temperature:", self._query_temperature[2])
-            time.sleep(1)
+        self._wait_while_cooling()
 
     def shutdown(self):
         self._deactivate_fan()
@@ -79,6 +91,12 @@ class Camera(object):
         else:
             print("Cooling disabled")
 
+    def _wait_while_cooling(self):
+        while self._query_temperature()[2] > self.working_temperature:
+            #  wait for camera to cool down
+            self.print_temperature()
+            time.sleep(5)
+
     def _query_temperature(self):
         qtsp = sbig.QueryTemperatureStatusParams()
         qtsp.request = sbig.TEMP_STATUS_ADVANCED2
@@ -111,6 +129,7 @@ class Camera(object):
         check_output(err, "Deactivated fan", "Failed to deactivate fan")
 
     def spectrum(self, exposure_time, filename):
+        # bias is not needed because dark and light are the same exposure time
         dark_image = self.dark(exposure_time)
         light_image = self.light(exposure_time)
         #  using HDU here to allow header to be included in future
@@ -161,7 +180,7 @@ class Camera(object):
         time.sleep(exposure_time)
         sep = sbig.StartExposureParams2()
         while status(sbig.CC_START_EXPOSURE2) != sbig.CS_INTEGRATION_COMPLETE:
-            pass  # loop until integration finished
+            time.sleep(0.5)  # loop until integration finished
 
     def _end_exposure(self):
         eep = sbig.EndExposureParams()
@@ -195,6 +214,7 @@ class Camera(object):
         rlp.pixelStart = 0
         rlp.pixelLength = 767
 
+        # faster with list comprehension?
         imgbuffer = np.zeros(767, np.uint16)
         img = np.zeros([767, 510], np.uint16)
         for i in range(510):
