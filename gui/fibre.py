@@ -250,8 +250,8 @@ class Aligner(object):
         # TEMPORARY TO CHECK
         fig, ax = plt.subplots()
         ax.imshow(intensities)
-        ax.xticks(range_x)
-        ax.yticks(range_y)
+        ax.set_xticks(range_x)
+        ax.set_yticks(range_y)
         fig.savefig("test_intensity.png")
         plt.close(fig)
 

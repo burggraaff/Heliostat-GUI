@@ -130,6 +130,7 @@ class FitFrame(tk.Frame):
         """
         best_x, best_y, intensities = self.aligner.optimise(steps=9)
         self.aligner.move_motors(best_x, best_y)
+        self.update()
 
         # draw intensity plot
 
