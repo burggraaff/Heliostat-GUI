@@ -1,3 +1,10 @@
+"""
+GUI for aligning the fibre to easily gather 'known' positions that work.
+These are then saved into a table, to which a fit is made either during
+run time of the main script or in this script.
+(which option we use is TBD)
+"""
+
 from __future__ import print_function
 import gui
 from gui import tk, LABEL_FONT
@@ -35,6 +42,7 @@ class FitFrame(tk.Frame):
         self: self
 
         parent: parent frame, to draw this one in
+        controller: controller frame, that controls e.g. timing
         """
         self.parent = parent
         self.controller = controller
@@ -87,6 +95,9 @@ class FitFrame(tk.Frame):
         self.indicator_l.grid(row = 3, column = 3, sticky = "w")
 
     def end(self):
+        """
+        Gracefully exit
+        """
         if self.aligner is not None:
             self.aligner.end()
 
@@ -99,10 +110,16 @@ class FitFrame(tk.Frame):
         self.indicator_l["text"] = "L: {0}".format(self.l)
 
     def photo(self):
+        """
+        Take and plot an image from the LED camera.
+        """
         self.image = self.aligner.led_camera.led_image()
         self.plot()
 
     def find_leds(self):
+        """
+        Find the LEDs in the latest image from the LED camera.
+        """
         self.aligner.find_LEDs(self.image)
         self.update()
         self.plot()
