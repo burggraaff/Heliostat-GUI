@@ -160,15 +160,20 @@ class Camera(object):
             Filename for saving the images.
             Light goes to <filename>.fit; Dark to <filename>_DarkCurrent.fit
         """
-
+        print("-----")
+        print("Exposing for {0} seconds".format(exposure_time))
         # bias is not needed because dark and light are the same exposure time
         dark_image = self.dark(exposure_time)
+        print("Dark done")
         light_image = self.light(exposure_time)
+        print("Light done")
         #  using HDU here to allow header to be included in future
         hdu_dark = fits.PrimaryHDU(data=dark_image)
         hdu_light = fits.PrimaryHDU(data=light_image)
         hdu_dark.writeto(filename+"_DarkCurrent.fit", overwrite=True)
         hdu_light.writeto(filename+".fit", overwrite=True)
+        print("Dark and light saved")
+        print("-----")
 
     def take_image(self, exposure_time, shutter=sbig.SC_OPEN_SHUTTER):
         """

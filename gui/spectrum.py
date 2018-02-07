@@ -64,18 +64,19 @@ class Spectrum(Frame):
 
     def expose(self):
         if self.camera is None:  # test mode -- immediately return test image
-            return "example_fits_files/Mooi"
+            self.filename = "example_fits_files/Mooi"
+            return
+
         exposure_time = self.time.get()
         try:
-            time = float(exposure_time)
+            exposure_time = float(exposure_time)
         except:
             message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
             messagebox.showerror("Error", message)
             raise ValueError(message)
-        print("Exposing for {0} seconds".format(time))
-        # ACTUAL EXPOSURE TO BE ADDED HERE
-        self.filename = timestamp() + ".fit"
-        return "example_fits_files/Mooi"
+        filename = timestamp()
+        self.camera.spectrum(exposure_time, filename)
+        self.filename = filename
 
     def read_data(self):
         self.data = reduce_spectrum(self.filename)
