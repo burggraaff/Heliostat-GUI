@@ -200,7 +200,7 @@ class Aligner(object):
         return predict_both
 
 
-    def optimise(self, xrange=0.05, yrange=0.05, steps=5):
+    def optimise(self, rangex=0.05, rangey=0.05, steps=5):
         """
         Try positions around the current one to find the one that lets the most
         light in.
@@ -215,8 +215,8 @@ class Aligner(object):
             Number of steps to try in either direction.
         """
         x_now, y_now = self.get_current_positions()
-        range_x = np.linspace(x_now - xrange, x_now + xrange, num=steps)
-        range_y = np.linspace(x_now - xrange, x_now + xrange, num=steps)
+        range_x = np.linspace(x_now - rangex, x_now + rangex, num=steps)
+        range_y = np.linspace(y_now - rangey, y_now + rangey, num=steps)
         intensities = np.zeros((steps, steps), dtype=np.uint16)
         for i in range(steps):
             for j in range(steps):
