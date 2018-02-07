@@ -74,7 +74,7 @@ class Spectrum(Frame):
             message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
             messagebox.showerror("Error", message)
             raise ValueError(message)
-        filename = timestamp()
+        filename = "spectra/{0}".format(timestamp())
         self.camera.spectrum(exposure_time, filename)
         self.filename = filename
 

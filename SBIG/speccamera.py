@@ -180,7 +180,7 @@ class Camera(object):
         Take an image with a given exposure time and shutter.
         N.B. usually you will prefer to use light, dark or bias.
         """
-        print("Current temperature:", self._query_temperature[2])
+        print("Current temperature:", self._query_temperature()[2])
         self._expose(exposure_time, shutter=shutter)
         image = self._readout()
         return image
