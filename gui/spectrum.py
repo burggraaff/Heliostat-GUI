@@ -4,6 +4,8 @@ Module containing classes and functions to use for the heliostat GUIs.
 
 from __future__ import print_function, division
 
+from SBIG.speccamera import Camera
+
 from Tkinter import Frame, Button, Label, Entry
 import tkFont as font
 import tkMessageBox as messagebox
@@ -35,6 +37,11 @@ class Spectrum(Frame):
         self.controller = controller
         Frame.__init__(self, self.parent, *args, **kwargs)
 
+        try:
+            self.camera = Camera()
+        except:  # to allow GUI use without spectral camera
+            self.camera = None
+
         self.filename = "N/A"
 
         self.button = Button(self, text = "TAKE SPECTRUM", font = LARGE_FONT, height = 2, width = 3, command = self.new_spectrum)
@@ -56,24 +63,26 @@ class Spectrum(Frame):
         self.plot()
 
     def expose(self):
-        self.filename = expose(self.time.get())
+        if self.camera is None:  # test mode -- immediately return test image
+            self.filename = "example_fits_files/Mooi"
+            return
+
+        exposure_time = self.time.get()
+        try:
+            exposure_time = float(exposure_time)
+        except:
+            message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
+            messagebox.showerror("Error", message)
+            raise ValueError(message)
+        filename = "spectra/{0}".format(timestamp())
+        self.camera.spectrum(exposure_time, filename)
+        self.filename = filename
 
     def read_data(self):
         self.data = reduce_spectrum(self.filename)
 
     def plot(self):
         plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = self.filename + ".fit")
-
-def expose(exposure_time):
-    try:
-        time = float(exposure_time)
-    except:
-        messagebox.showerror("Error", "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
-        raise ValueError("Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time))
-    print("Exposing for {0} seconds".format(time))
-    # ACTUAL EXPOSURE TO BE ADDED HERE
-    filename = timestamp() + ".fit"
-    return "example_fits_files/Mooi"
 
 def reduce_spectrum(filename):
     raw_data = fits.getdata(filename + ".fit").astype(np.int16)

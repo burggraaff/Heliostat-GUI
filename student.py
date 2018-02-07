@@ -17,7 +17,7 @@ class Page1(gui.Page):
 
     def end(self):
         self.controls.align.end()
-        gui.Page.end(self)
+        self.spectrum.camera.shutdown()
 
 pages = [Page1]
 

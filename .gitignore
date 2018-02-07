@@ -3,6 +3,10 @@ sun.jpg
 LED_photo.png
 test*.png
 *.kate-swp
+test*.fit
+SBIG/Sbigudrv.py
+SBIG/Sbigudrv_wrap.c
+spectra/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

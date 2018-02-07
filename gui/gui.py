@@ -62,7 +62,7 @@ class Page(tk.Frame): # individual page within interface
         self.langfile = langfile
         self.translatables = []
 
-        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = self.end)
+        self.quit_button = tk.Button(self, text = "X", font = LARGE_FONT, height = 2, width = 5, bg = "red", command = self.controller.end)
         self.quit_button.grid(row = 0, column = 5000, padx = 2.5, pady = 2.5, sticky = tk.NE) # column = 5000 ensures it is always on the far right
 
         if previous is not None:
@@ -90,7 +90,7 @@ class Page(tk.Frame): # individual page within interface
         self.lift()
 
     def end(self):
-        end(self.controller)
+        raise NotImplementedError
 
 
 class Root(Tk): # main object, controls the programme
@@ -145,6 +145,11 @@ class Root(Tk): # main object, controls the programme
         print("Ended fullscreen")
         self.attributes("-fullscreen", False)
         self.wm_geometry(self.geom)
+
+    def end(self):
+        for frame in self.frames.values():
+            frame.end()
+        end(self)
 
 def end(GUI):
     GUI.quit()
