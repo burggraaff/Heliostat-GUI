@@ -236,7 +236,7 @@ class Aligner(object):
         fig.savefig("test_intensity.png")
         plt.close(fig)
 
-        return best_x, best_y
+        return best_x, best_y, intensities
 
     def align(self):
         # use camera to find fibre for inistial estimate

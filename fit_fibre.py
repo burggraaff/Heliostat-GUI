@@ -125,9 +125,13 @@ class FitFrame(tk.Frame):
         self.plot()
 
     def optimise(self):
-        for j in range(5):
-            self.l = self.aligner.intensity()
-            self.update()
+        """
+        Optimise around the current position and give diagnostics.
+        """
+        best_x, best_y, intensities = self.aligner.optimise(steps=9)
+        self.aligner.move_motors(best_x, best_y)
+
+        # draw intensity plot
 
     def save(self):
         self.update()
