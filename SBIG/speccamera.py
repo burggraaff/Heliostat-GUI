@@ -107,7 +107,7 @@ class Camera(object):
         while self._query_temperature()[2] > self.working_temperature:
             #  wait for camera to cool down
             self.print_temperature()
-            time.sleep(3)
+            time.sleep(1)
         self.print_temperature()
 
     def _query_temperature(self):
@@ -130,7 +130,7 @@ class Camera(object):
         cooling_str = "Cooling" if cooling else "Not cooling"
         fan_str = "Fan ON" if fan else "FAN OFF"
         temp_str = "Temperature: {0}".format(temp)
-        print(temp_str, fan_str, cooling_str, sep="\n")
+        print(temp_str, fan_str, cooling_str, sep=" ; ")
 
     def _activate_fan(self):
         mcp = sbig.MiscellaneousControlParams()
