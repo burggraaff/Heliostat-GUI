@@ -30,7 +30,7 @@ class Camera(object):
 
     Based on `proggel` module by Gilles/Pim.
     """
-    def __init__(self, working_temperature=0.0):
+    def __init__(self, working_temperature=-5.0):
         """
         Create the Camera object and start it up.
         The camera will start to cool down, which may cause the programme to
@@ -93,7 +93,7 @@ class Camera(object):
         err = sbig.SBIGUnivDrvCommand(sbig.CC_ESTABLISH_LINK, params, result)
         check_output(err, "Established link with camera", "Unable to establish link with camera")
 
-    def _set_temperature(self, temperature, cool=False):
+    def _set_temperature(self, temperature, cool=True):
         strp = sbig.SetTemperatureRegulationParams2()
         strp.regulation = cool
         strp.ccdSetpoint = temperature
@@ -107,7 +107,8 @@ class Camera(object):
         while self._query_temperature()[2] > self.working_temperature:
             #  wait for camera to cool down
             self.print_temperature()
-            time.sleep(5)
+            time.sleep(3)
+        self.print_temperature()
 
     def _query_temperature(self):
         qtsp = sbig.QueryTemperatureStatusParams()
@@ -180,6 +181,7 @@ class Camera(object):
         Take an image with a given exposure time and shutter.
         N.B. usually you will prefer to use light, dark or bias.
         """
+        self._wait_while_cooling()
         print("Current temperature:", self._query_temperature()[2])
         self._expose(exposure_time, shutter=shutter)
         image = self._readout()
