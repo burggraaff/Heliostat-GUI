@@ -62,11 +62,12 @@ class Spectrum(Frame):
         self.read_data()
         self.plot()
 
-    def expose(self): 
-        if camera is None:  # test mode -- immediately return test image
+    def expose(self):
+        if self.camera is None:  # test mode -- immediately return test image
             return "example_fits_files/Mooi"
+        exposure_time = self.time.get()
         try:
-            time = float(self.time.get())
+            time = float(exposure_time)
         except:
             message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
             messagebox.showerror("Error", message)
