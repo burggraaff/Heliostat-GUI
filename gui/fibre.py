@@ -230,6 +230,7 @@ class Aligner(object):
         steps: int
             Number of steps to try in either direction.
         """
+        self.move_motors(0.5, 0.5)
         x_now, y_now = self.get_current_positions()
         range_x = np.linspace(x_now - rangex, x_now + rangex, num=steps)
         range_y = np.linspace(y_now - rangey, y_now + rangey, num=steps)
@@ -240,6 +241,7 @@ class Aligner(object):
             x, y = range_x[i], range_y[j]
             self.move_motors(x, y)
             intensities[i, j] = self.intensity()
+            print(intensities[i, j])
 
         best_ind = intensities.argmax()
         best_x_ind, best_y_ind = np.unravel_index(best_ind, intensities.shape)
@@ -360,6 +362,7 @@ class AlignFrame(tk.Frame):
         except Exception as e:  # placeholder if photo cannot be used
             image = np.kron([[1, 0] * 4, [0, 1] * 4] * 4, np.ones((10,10)))
             leds = fibre = np.array([])
+            raise
         self.plot_led_image(image, leds, fibre)
 
     def plot_led_image(self, image, leds=np.array([]), fibre=np.array([])):
