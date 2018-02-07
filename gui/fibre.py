@@ -199,6 +199,22 @@ class Aligner(object):
 
         return predict_both
 
+    @staticmethod
+    def _zigzag_indices(number):
+        """
+        Zig-zag indices for a square array, to reduce time spent moving motors.
+
+        e.g. for a 3x3 array, normally you would do:
+            (0,0) (0,1) (0,2) (1,0) (1,1) (1,2) (2,0) (2,1) (2,2)
+        now we do:
+            (0,0) (0,1) (0,2) (1,2) (1,1) (1,0) (2,0) (2,1) (2,2)
+        """
+        simple_range = np.arange(number)
+        simple_range_with_reverse = np.concatenate((simple_range, simple_range[::-1]))
+        slow_axis = simple_range.repeat(number)
+        fast_axis = np.tile(simple_range_with_reverse, number//2+1)[:number**2]
+        total = zip(slow_axis, fast_axis)
+        return total
 
     def optimise(self, rangex=0.05, rangey=0.05, steps=5):
         """
@@ -218,11 +234,12 @@ class Aligner(object):
         range_x = np.linspace(x_now - rangex, x_now + rangex, num=steps)
         range_y = np.linspace(y_now - rangey, y_now + rangey, num=steps)
         intensities = np.zeros((steps, steps), dtype=np.uint16)
-        for i in range(steps):
-            for j in range(steps):
-                x, y = range_x[i], range_y[j]
-                self.move_motors(x, y)
-                intensities[i, j] = self.intensity()
+        indices = self._zigzag_indices(steps)
+
+        for i, j in indices:
+            x, y = range_x[i], range_y[j]
+            self.move_motors(x, y)
+            intensities[i, j] = self.intensity()
 
         best_ind = intensities.argmax()
         best_x_ind, best_y_ind = np.unravel_index(best_ind, intensities.shape)
