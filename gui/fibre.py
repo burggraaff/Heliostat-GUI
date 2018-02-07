@@ -186,15 +186,15 @@ class Aligner(object):
         f:
             Function that gives the initial estimate.
         """
-        def predict_one_motor(led_coords, c0, c1, c2):  # linear for now
-            return c0 * led_coords[0] + c1 * led_coords[1] + c2
+        def predict_one_motor(fibre_coords, c0, c1, c2):  # linear for now
+            return c0 * fibre_coords[0] + c1 * fibre_coords[1] + c2
 
         poptx, pcovx = curve_fit(predict_one_motor, self.table[:,:2].T, self.table[:,2])
         popty, pcovy = curve_fit(predict_one_motor, self.table[:,:2].T, self.table[:,3])
 
-        def predict_both(led_coords):
-            x = predict_one_motor(led_coords, *poptx)
-            y = predict_one_motor(led_coords, *popty)
+        def predict_both(fibre_coords):
+            x = predict_one_motor(fibre_coords, *poptx)
+            y = predict_one_motor(fibre_coords, *popty)
             return x, y
 
         return predict_both
@@ -263,11 +263,11 @@ class Aligner(object):
         self.find_LEDs(image)  # fibre position now in self.fibre_coords
 
         # look up / calculate initial estimate for best position
-        guess = self.initial_estimate()
+        guess = self.initial_estimate(self.fibre_coords)
         self.move_motors(*guess)
 
         # find optimal values around estimate and move there
-        x, y = self.optimise()
+        x, y, intensities = self.optimise()
         self.move_motors(x, y)
 
         return image, self.led_coords, self.fibre_coords
