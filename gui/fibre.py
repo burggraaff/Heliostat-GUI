@@ -44,7 +44,7 @@ class Aligner(object):
         Initialise Aligner object. Looks for Thorlabs motors with given
         serial numbers, and for any PointGrey camera.
         Note: maybe use serial number for PG camera as well?
-        
+
         Parameters
         ----------
         serial_1: int
@@ -91,10 +91,13 @@ class Aligner(object):
         print("\n***** CONNECTING TO FIBREHEAD LED CAMERA *****")
         bus = pc2.BusManager()
         numCams = bus.getNumOfCameras()
-        assert numCams, "\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n"
-        camera = Camera(bus)
-        print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
-        return camera
+        if numCams == 0:
+            print("\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n")
+            return None
+        else:
+            camera = Camera(bus)
+            print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
+            return camera
 
     def move_motors(self, x, y, v=0.5):
         print("Moving to ({0}, {1})".format(x,y))
