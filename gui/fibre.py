@@ -173,9 +173,6 @@ class Aligner(object):
         """
         Fit a function to estimate the optimal alignment based on known values.
 
-        Currently assumes there is a relation x_led-x_fiber and y_led-y_fibre
-        but not cross-terms. This has NOT been tested!
-
         Parameters
         ----------
         order: int
