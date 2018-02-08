@@ -59,9 +59,19 @@ class Aligner(object):
         Function giving an initial estimate for the best alignment based on
         the location of the fibrehead.
     """
-
     def __init__(self, serial_1=serial_no_1, serial_2=serial_no_2, table="static/fibre_positions.txt"):
         """
+        Initialise Aligner object. Looks for Thorlabs motors with given
+        serial numbers, and for any PointGrey camera.
+        
+        Note: maybe use serial number for PG camera as well?
+        
+        Parameters
+        ----------
+        serial_1: int
+            Serial number of first Thorlabs motor
+        serial_2: int
+            Serial number of second Thorlabs motor
         table: str
             Location of table with known alignments of fibrehead.
         """
@@ -78,6 +88,9 @@ class Aligner(object):
         self.initial_estimate = self.fit()
 
     def end(self):
+        """
+        Disconnect motors and camera to prevent issues when re-starting.
+        """
         self.motor1.cleanUpAPT()
         self.motor2.cleanUpAPT()
         self.led_camera.disconnect()
@@ -110,10 +123,13 @@ class Aligner(object):
         print("\n***** CONNECTING TO FIBREHEAD LED CAMERA *****")
         bus = pc2.BusManager()
         numCams = bus.getNumOfCameras()
-        assert numCams, "\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n"
-        camera = Camera(bus)
-        print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
-        return camera
+        if numCams == 0:
+            print("\n***** COULD NOT CONNECT TO FIBREHEAD LED CAMERA ******\n")
+            return None
+        else:
+            camera = Camera(bus)
+            print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
+            return camera
 
     @staticmethod
     def connect_optimisation_camera(vimba):
@@ -271,6 +287,9 @@ class Aligner(object):
 
 
 class Camera(pc2.Camera):
+    """
+    PointGrey Camera object.
+    """
     def __init__(self, bus, index=0):
         pc2.Camera.__init__(self)
         self.connect(bus.getCameraFromIndex(index))
@@ -304,7 +323,7 @@ class Camera(pc2.Camera):
 
 class AlignFrame(tk.Frame):
     """
-    Object that aids in aligning the fibre
+    Frame that displays the alignment of the fibre.
     """
     def __init__(self, parent, controller, *args, **kwargs):
         """
@@ -312,9 +331,8 @@ class AlignFrame(tk.Frame):
 
         Parameters
         ----------
-        self: self
-
         parent: parent frame, to draw this one in
+        controller: controller object that handles timing calls
         """
         self.parent = parent
         self.controller = controller

@@ -1,5 +1,5 @@
 """
-Module containing classes and functions to use for the heliostat GUIs.
+Frame that contains the spectrum as measured by the SBIG camera.
 """
 
 from __future__ import print_function, division
@@ -27,11 +27,16 @@ def timestamp():
 
 class Spectrum(Frame):
     """
-    Object that aids in displaying a spectrum
+    Frame that displays the spectrum.
     """
     def __init__(self, parent, controller, *args, **kwargs):
         """
-        Initialises Spectrum object
+        Initialises Spectrum object.
+
+        Parameters
+        ----------
+        parent: parent frame, to draw this one in
+        controller: controller object that handles timing calls
         """
         self.parent = parent
         self.controller = controller
@@ -58,11 +63,17 @@ class Spectrum(Frame):
         self.canvas.get_tk_widget().grid(row=3, column=0, columnspan = 2, sticky='news')
 
     def new_spectrum(self):
+        """
+        Record and plot a new spectrum
+        """
         self.expose()
         self.read_data()
         self.plot()
 
     def expose(self):
+        """
+        Fetch exposure time from the input field and take an image.
+        """
         if self.camera is None:  # test mode -- immediately return test image
             self.filename = "example_fits_files/Mooi"
             return
@@ -79,9 +90,15 @@ class Spectrum(Frame):
         self.filename = filename
 
     def read_data(self):
+        """
+        Read spectral data from the current filename.
+        """
         self.data = reduce_spectrum(self.filename)
 
     def plot(self):
+        """
+        Plot the currnetly loaded spectrum.
+        """
         plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = self.filename + ".fit")
 
 def reduce_spectrum(filename):

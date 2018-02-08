@@ -1,5 +1,5 @@
 """
-Module containing classes and functions to use for the heliostat GUIs.
+Frame that contains the image of the Sun in its current orientation.
 """
 
 from __future__ import print_function, division
@@ -25,7 +25,7 @@ day_of_year = datetime.datetime.now().timetuple().tm_yday
 
 class Sun(Frame):
     """
-    Object that aids in displaying the orientation of the Sun
+    Frame that displays the orientation of the Sun.
     """
     def __init__(self, parent, controller, *args, **kwargs):
         """
@@ -34,6 +34,7 @@ class Sun(Frame):
         Parameters
         ----------
         parent: parent frame, to draw this one in
+        controller: controller object that handles timing calls
         """
         self.parent = parent
         self.controller = controller
@@ -47,14 +48,40 @@ class Sun(Frame):
         self.plot() # initialise sun
 
     def plot(self):
+        """
+        Draw and periodically update the figure showing the Solar orientation.
+
+        The figure is automatically updated every 10 minutes - N.B. manual
+        calls to this function will create additional automatic updates.
+        """
         plot_sun(self.fig)
         self.controller.after(10*60*1000, self.plot) # automatically update every 10 mins
 
 def sun_satellite(saveto = "sun.jpg"):
+    """
+    Fetch a live satellite image of the Sun from NASA.
+
+    Parameters
+    ----------
+    saveto: Location to save the image to.
+    """
     url = "http://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg"
     urlretrieve(url, saveto)
 
 def load_sun(dynamic = "sun.jpg", static = "static/sun_static.jpg"):
+    """
+    Load an image of the Sun. First try to download a live image; if this is
+    not possible, use a pre-loaded static image.
+
+    Parameters
+    ----------
+    dynamic: Location to save/load live image to/from.
+    static: Location to load static image from.
+
+    Returns
+    -------
+    img: PIL Image object containing image of the Sun.
+    """
     try:
         sun_satellite(dynamic)
         img = Image.open(dynamic)
@@ -67,6 +94,18 @@ def load_sun(dynamic = "sun.jpg", static = "static/sun_static.jpg"):
     return img
 
 def rotation_angle(day = day_of_year):
+    """
+    Calculate the angle of rotation of the Sun from N-S orientation due to
+    its rotation on the sky and the effects of the heliostat.
+
+    Parameters
+    ----------
+    day: Current day of the year (integer)
+
+    Returns
+    -------
+    rotation_angle: The angle of rotation.
+    """
     # the image on the screen is rotated 24 degrees from perpendicular (to the right when looking towards the screen)
     rotation_angle = 24.
     #now we calculate the effect from the orientation of the Earth's axis relative to its orbit
@@ -93,6 +132,20 @@ def rotation_angle(day = day_of_year):
     return rotation_angle
 
 def sun_rotate(img, angle):
+    """
+    Rotate an image of the Sun with the current rotation as would be seen on
+    the screen at the heliostat.
+    Also overlays NSEW indicators on the image.
+
+    Parameters
+    ----------
+    img: Image of the Sun to rotate.
+    angle: Angle by which to rotate.
+
+    Returns
+    -------
+    img_rotated: The rotated image.
+    """
     top=Image.open('static/Overlay.jpg')
     r,g,b=top.split()
     mask=Image.merge('L', (b,)) # to only copy text
@@ -103,6 +156,14 @@ def sun_rotate(img, angle):
     return img_rotated
 
 def plot_sun(fig):
+    """
+    Plot an image of the Sun into a given figure, including rotation and a
+    line for the equator.
+
+    Parameters
+    ----------
+    fig: matplotlib figure to draw into.
+    """
     img = load_sun()
     angle = rotation_angle()
     print("Rotation angle of the sun: {0:.2f}".format(angle))
