@@ -54,7 +54,7 @@ class Spectrum(Frame):
         self.label_integration = Label(self, text = "INTEGRATION TIME", height = 2, width = 16, font = LARGE_FONT)
         self.label_integration.grid(row = 1, column = 0, sticky = "w")
         self.time = Entry(self, font = LARGE_FONT)
-        self.time.insert(0, 10)
+        self.time.insert(0, 5)
         self.time.grid(row = 1, column = 1, sticky = "w")
 
         self.fig, axs = plt.subplots(nrows = 2, sharex = True, figsize = (8, 5), tight_layout = True, facecolor = "none")
@@ -80,13 +80,13 @@ class Spectrum(Frame):
 
         exposure_time = self.time.get()
         try:
-            exposure_time = float(exposure_time)
+            self.exposure_time = float(exposure_time)
         except:
             message = "Exposure time \"{0}\" cannot be converted to floating point number".format(exposure_time)
             messagebox.showerror("Error", message)
             raise ValueError(message)
         filename = "spectra/{0}".format(timestamp())
-        self.camera.spectrum(exposure_time, filename)
+        self.camera.spectrum(self.exposure_time, filename)
         self.filename = filename
 
     def read_data(self):
@@ -100,6 +100,9 @@ class Spectrum(Frame):
         Plot the currnetly loaded spectrum.
         """
         plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = self.filename + ".fit")
+        
+    def intensity(self):
+        return np.percentile(self.data[225:475], 98) / self.exposure_time
 
 def reduce_spectrum(filename):
     raw_data = fits.getdata(filename + ".fit").astype(np.int16)
