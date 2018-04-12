@@ -24,8 +24,8 @@ except ImportError:
 else:
     use_motors = True
 
-serial_no_1 = 26000369
-serial_no_2 = 26000370
+serial_no_1 = 26000370
+serial_no_2 = 26000369
 dll_location = r"gui\APT.dll"
 
 try:
@@ -35,12 +35,12 @@ except ImportError:
 else:
     use_camera = True
 
-try:
-    from pymba import Vimba
-except ImportError:
-    opt_camera = False
-else:
-    opt_camera = True
+#try:
+#    from pymba import Vimba
+#except ImportError:
+#    opt_camera = False
+#else:
+#    opt_camera = True
 
 class Aligner(object):
     """
@@ -76,8 +76,8 @@ class Aligner(object):
             Location of table with known alignments of fibrehead.
         """
         self.led_camera = self.connect_led_camera()
-        self.vimba = Vimba() ; self.vimba.startup()
-        self.opt_camera = self.connect_optimisation_camera(self.vimba)
+        #self.vimba = Vimba() ; self.vimba.startup()
+        #self.opt_camera = self.connect_optimisation_camera(self.vimba)
         self.motor1 = self.connect_motor(serial_1)
         self.motor2 = self.connect_motor(serial_2)
 
@@ -94,8 +94,8 @@ class Aligner(object):
         self.motor1.cleanUpAPT()
         self.motor2.cleanUpAPT()
         self.led_camera.disconnect()
-        self.opt_camera.revokeAllFrames()
-        self.vimba.shutdown()
+        #self.opt_camera.revokeAllFrames()
+        #self.vimba.shutdown()
 
     def get_current_positions(self):
         return self.motor1.getPos(), self.motor2.getPos()
@@ -111,7 +111,8 @@ class Aligner(object):
         except Exception as e:
             print(e)
         try:
-            motor.go_home()
+            pass
+            #motor.go_home()
         except ValueError:
             pass  # always gives a ValueError for some reason
         motor.identify()  # blink to show connection clearly
@@ -131,29 +132,29 @@ class Aligner(object):
             print("\n***** FINISHED CONNECTING TO FIBREHEAD LED CAMERA *****\n")
             return camera
 
-    @staticmethod
-    def connect_optimisation_camera(vimba):
-        print("\n***** CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****")
-        cameraIds = vimba.getCameraIds()
-        camera = vimba.getCamera(cameraIds[0])
-        camera.openCamera()
-        camera.AcquisitionMode = "SingleFrame"
-        camera.ExposureTime = 10000.
-        print("\n***** FINISHED CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****\n")
-        return camera
+    #@staticmethod
+    #def connect_optimisation_camera(vimba):
+    #    print("\n***** CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****")
+    #    cameraIds = vimba.getCameraIds()
+    #    camera = vimba.getCamera(cameraIds[0])
+    #    camera.openCamera()
+    #    camera.AcquisitionMode = "SingleFrame"
+    #    camera.ExposureTime = 10000.
+    #    print("\n***** FINISHED CONNECTING TO SPECTROGRAPH INTENSITY CAMERA *****\n")
+    #    return camera
 
-    def opt_photo(self):
-        frame = self.opt_camera.getFrame()
-        frame.announceFrame()
-        self.opt_camera.startCapture()
-        frame.queueFrameCapture()
-        self.opt_camera.runFeatureCommand("AcquisitionStart")
-        self.opt_camera.runFeatureCommand("AcquisitionStop")
-        frame.waitFrameCapture()
-        data = frame.getImage()
-        self.opt_camera.endCapture()
-        frame.revokeFrame()
-        return data
+    #def opt_photo(self):
+    #    frame = self.opt_camera.getFrame()
+    #    frame.announceFrame()
+    #    self.opt_camera.startCapture()
+    #    frame.queueFrameCapture()
+    #    self.opt_camera.runFeatureCommand("AcquisitionStart")
+    #    self.opt_camera.runFeatureCommand("AcquisitionStop")
+    #    frame.waitFrameCapture()
+    #    data = frame.getImage()
+    #    self.opt_camera.endCapture()
+    #    frame.revokeFrame()
+    #    return data
 
     def intensity(self):
         image = self.opt_photo()
@@ -229,7 +230,7 @@ class Aligner(object):
         total = zip(slow_axis, fast_axis)
         return total
 
-    def optimise(self, rangex=0.05, rangey=0.05, steps=5):
+    def optimise(self, rangex=0.05, rangey=0.05, steps=5, func=intensity):
         """
         Try positions around the current one to find the one that lets the most
         light in.
@@ -243,7 +244,7 @@ class Aligner(object):
         steps: int
             Number of steps to try in either direction.
         """
-        self.move_motors(0.5, 0.5)
+        #self.move_motors(0.5, 0.5)
         x_now, y_now = self.get_current_positions()
         range_x = np.linspace(x_now - rangex, x_now + rangex, num=steps)
         range_y = np.linspace(y_now - rangey, y_now + rangey, num=steps)
@@ -253,7 +254,7 @@ class Aligner(object):
         for i, j in indices:
             x, y = range_x[i], range_y[j]
             self.move_motors(x, y)
-            intensities[i, j] = self.intensity()
+            intensities[i, j] = func()
             print(intensities[i, j])
 
         best_ind = intensities.argmax()
@@ -318,6 +319,8 @@ class Camera(pc2.Camera):
         imgdata = np.array(image.getData())  # np.array() call prevents crash
         shape = (image.getRows(), image.getCols())
         imgdata = imgdata.reshape(shape)
+        imgdata = np.flipud(imgdata)
+        imgdata = np.fliplr(imgdata)
         return imgdata
 
 

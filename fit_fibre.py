@@ -20,14 +20,13 @@ class Page1(gui.Page):
         gui.Page.__init__(self, parent, controller, langfile = "student")
 
         self.title = gui.tk.Label(self, text = "STUDENT SCREEN", font = gui.LABEL_FONT)
-        self.title.grid(row = 0, column = 1, columnspan = 10, stick = "news")
+        self.title.grid(row = 0, column = 1, columnspan = 100, stick = "news")
 
         self.align = FitFrame(parent=self, controller=self.controller)
-        self.align.grid(row = 1, column = 1, columnspan = 10, sticky = "news")
+        self.align.grid(row = 1, column = 1, columnspan = 10)
 
     def end(self):
         self.align.end()
-        gui.Page.end(self)
 
 class FitFrame(tk.Frame):
     """
@@ -59,14 +58,19 @@ class FitFrame(tk.Frame):
         self.b_plot.grid(row = 1, column = 4, sticky = "news")
         self.b_find = tk.Button(self, text = "FIND LEDS", font = LABEL_FONT, height = 2, width = 10, command = self.find_leds)
         self.b_find.grid(row = 2, column = 4, sticky = "news")
+        self.b_L = tk.Button(self, text = "INTENSITY", font = LABEL_FONT, height = 2, width = 10, command = self.intensity)
+        self.b_L.grid(row = 3, column = 4, sticky = "news")
         self.b_opti = tk.Button(self, text = "OPTIMISE", font = LABEL_FONT, height = 2, width = 10, command = self.optimise)
-        self.b_opti.grid(row = 3, column = 4, sticky = "news")
+        self.b_opti.grid(row = 4, column = 4, sticky = "news")
         self.b_save = tk.Button(self, text = "SAVE", font = LABEL_FONT, height = 2, width = 10, command = self.save)
-        self.b_save.grid(row = 4, column = 4, sticky = "news")
+        self.b_save.grid(row = 5, column = 4, sticky = "news")
 
-        self.fig = plt.figure(figsize=(7,5), facecolor = "none", tight_layout=True)
+        self.fig = plt.figure(figsize=(6,4), facecolor = "none", tight_layout=True)
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=2)
+        
+        self.spectrum = gui.Spectrum(parent = self, controller = self.controller)
+        #self.spectrum.grid(row = 1, column = 0, rowspan=3)
 
         self.fig_xx = plt.figure(figsize=(4,4), facecolor = "none", tight_layout=True)
         self.canvas_xx = FigureCanvasTkAgg(self.fig_xx, self)
@@ -94,6 +98,12 @@ class FitFrame(tk.Frame):
         self.indicator_l = tk.Label(self, text = "L: 00000", font = LABEL_FONT)
         self.indicator_l.grid(row = 3, column = 3, sticky = "w")
 
+    def intensity(self):
+        self.spectrum.new_spectrum()
+        self.l = self.spectrum.intensity()
+        self.update()
+        return self.l
+        
     def end(self):
         """
         Gracefully exit
@@ -128,7 +138,7 @@ class FitFrame(tk.Frame):
         """
         Optimise around the current position and give diagnostics.
         """
-        best_x, best_y, intensities = self.aligner.optimise(steps=9)
+        best_x, best_y, intensities = self.aligner.optimise(steps=5, func=self.intensity)
         self.aligner.move_motors(best_x, best_y)
         self.update()
 
