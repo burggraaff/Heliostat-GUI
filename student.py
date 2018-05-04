@@ -17,7 +17,10 @@ class Page1(gui.Page):
 
     def end(self):
         self.controls.align.end()
-        self.spectrum.camera.shutdown()
+        try:
+            self.spectrum.camera.shutdown()
+        except:
+            print("No camera to shut down")
 
 pages = [Page1]
 
