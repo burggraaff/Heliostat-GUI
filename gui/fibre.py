@@ -78,8 +78,12 @@ class Aligner(object):
         self.led_camera = self.connect_led_camera()
         #self.vimba = Vimba() ; self.vimba.startup()
         #self.opt_camera = self.connect_optimisation_camera(self.vimba)
-        self.motor1 = self.connect_motor(serial_1)
-        self.motor2 = self.connect_motor(serial_2)
+        try:
+            self.motor1 = self.connect_motor(serial_1)
+            self.motor2 = self.connect_motor(serial_2)
+        except Exception as e:
+            print("Could not connect to motor")
+            raise
 
         self.led_coords = np.array([])
         self.fibre_coords = (-1, -1)
@@ -109,7 +113,7 @@ class Aligner(object):
         try:
             motor = APTMotor(SerialNum = serial_no, dllname=dll_location)
         except Exception as e:
-            print(e)
+            raise
         try:
             pass
             #motor.go_home()
