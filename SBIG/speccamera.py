@@ -164,10 +164,10 @@ class Camera(object):
         print("-----")
         print("Exposing for {0} seconds".format(exposure_time))
         # bias is not needed because dark and light are the same exposure time
-        dark_image = self.dark(exposure_time)
-        print("Dark done")
         light_image = self.light(exposure_time)
         print("Light done")
+        dark_image = self.dark(exposure_time)
+        print("Dark done")
         #  using HDU here to allow header to be included in future
         hdu_dark = fits.PrimaryHDU(data=dark_image)
         hdu_light = fits.PrimaryHDU(data=light_image)
