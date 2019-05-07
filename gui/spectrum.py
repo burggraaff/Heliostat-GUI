@@ -42,10 +42,14 @@ class Spectrum(Frame):
         self.controller = controller
         Frame.__init__(self, self.parent, *args, **kwargs)
 
+        print("***** CONNECTING TO SPECTRAL (SBIG) CAMERA *****")
         try:
             self.camera = Camera()
         except:  # to allow GUI use without spectral camera
             self.camera = None
+            print("***** COULD NOT CONNECT *****")
+        else:
+            print("***** CONNECTED *****")
 
         self.filename = "N/A"
 
@@ -75,6 +79,7 @@ class Spectrum(Frame):
         Fetch exposure time from the input field and take an image.
         """
         if self.camera is None:  # test mode -- immediately return test image
+            print("NO SPECTRAL CAMERA FOUND -- USING TEST DATA")
             self.filename = "example_fits_files/Mooi"
             return
 

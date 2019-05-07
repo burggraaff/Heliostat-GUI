@@ -82,7 +82,7 @@ class Aligner(object):
             self.motor1 = self.connect_motor(serial_1)
             self.motor2 = self.connect_motor(serial_2)
         except Exception as e:
-            print("Could not connect to motor")
+            print("Could not connect to motors")
             raise
 
         self.led_coords = np.array([])
@@ -109,10 +109,11 @@ class Aligner(object):
 
     @staticmethod
     def connect_motor(serial_no):
-        print("**** CONNECTING TO MOTOR ****")
+        print("**** CONNECTING TO MOTOR", serial_no, "****")
         try:
             motor = APTMotor(SerialNum = serial_no, dllname=dll_location)
         except Exception as e:
+            print("**** CONNECTION FAILED ****")
             raise
         try:
             pass
