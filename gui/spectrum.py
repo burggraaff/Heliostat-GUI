@@ -104,7 +104,7 @@ class Spectrum(Frame):
         """
         Plot the currnetly loaded spectrum.
         """
-        plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = self.filename + ".fit")
+        plot_spectrum(self.data, self.fig, self.ax_e, self.ax_s, title = "Solar spectrum")
         
     def intensity(self):
         return np.percentile(self.data[225:475], 98) / self.exposure_time
@@ -118,7 +118,7 @@ def reduce_spectrum(filename):
 
 def plot_spectrum(data, fig, a_exp, a_spec, title = ""):
     a_exp.clear()
-    a_exp.imshow(data[225:475], origin = "upper")
+    a_exp.imshow(data[225:], origin = "upper", vmin = np.percentile(data.ravel(), 2), vmax = np.percentile(data.ravel(), 98))
     a_exp.get_xaxis().set_visible(False)
     a_exp.get_yaxis().set_visible(False)
     a_exp.set_title(title)
